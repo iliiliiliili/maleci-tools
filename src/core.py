@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Union
 from simple_term_menu import TerminalMenu
 
+from exceptions import NoArgumentException, NoSelectionException
+
 def get_args(args, kwargs, expected_args, default_values):
 
     result = {}
@@ -42,7 +44,7 @@ def get_args(args, kwargs, expected_args, default_values):
                     if arg_name in default_values:
                         result[arg_name] = default_values[arg_name]
                     else:
-                        raise ValueError(f"No value for required argument {arg_name}")
+                        raise NoArgumentException(f"No value for required argument {arg_name}")
     
     return result
 
@@ -76,10 +78,27 @@ def select_option(options, message):
     index = menu.show()
 
     if index is None:
-        raise ValueError("No selection")
+        raise NoSelectionException("")
 
     return index
 
+
+def select_continue(message):
+    
+    index = select_option(["Continue", "Cancel"], message)
+
+    return index == 0
+
+
+def select_continue_with_details(message, details_func, details_text="Details"):
+    
+    index = select_option(["Continue", details_text, "Cancel"], message)
+
+    if index == 1:
+        details_func()
+        return select_continue(message)
+
+    return index == 0
 
 def get_project_path(project: str):
     return Path(project).resolve()
@@ -91,3 +110,8 @@ def path_in_project(path: Union[str, Path], project_path: Path):
 
 def get_display_path(path: Union[str, Path], project_path: Path):
     return Path(path).relative_to(project_path)
+
+
+def display_files(files, project_path: Path):
+    for file in files:
+        print(f"{file[2]} in {get_display_path(file[0], project_path)}")
