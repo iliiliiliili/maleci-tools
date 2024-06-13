@@ -2,12 +2,17 @@ import os
 
 from core import get_args, select_option
 from exceptions import NoSelectionException
-from py import fire, unittest
+from src.py import fire, unittest
 from fire import Fire
 
 COMMANDS = {
     "add": ["fire", "unittest"]
 }
+
+
+def no_func(g):
+    return
+
 
 def select_comand(group: str):
     options = COMMANDS[group]

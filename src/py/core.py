@@ -1,11 +1,11 @@
 import os
-import shutil
+from typing import Callable, List
 import astroid
+import astroid.arguments
 import astroid.exceptions
-from pathlib import Path
 
-BACKUP_PATH = "./backup"
-BACKUP_ID_FILE = os.path.join(BACKUP_PATH, ".id")
+DEFAULT_SPACES = 4
+MAX_SINGLE_LINE_ARGS = 3
 
 
 def find_nodes_old(tree, check):
@@ -200,27 +200,72 @@ def line_number_to_line_index(tree, lineno):
     return result
 
 
+def check_if_class(node: astroid.NodeNG):
+    return isinstance(node, astroid.ClassDef)
+
+
+def check_if_function(node: astroid.NodeNG):
+    return isinstance(node, astroid.FunctionDef)
+
+
+def check_if_return(node: astroid.NodeNG):
+    return isinstance(node, astroid.Return)
+
+
+def check_if_function_returns(node: astroid.FunctionDef):
+
+    return_nodes = find_nodes(node, check_if_return, True)
+
+    for r in return_nodes:
+        if r.value is not None:
+            return True
+
+    return False
+
+
+def create_check_if_import(name: str):
+
+    def check_if_import(node: astroid.NodeNG):
+        return (
+            isinstance(node, astroid.Import) and name in [a[0] for a in node.names]
+        ) or (isinstance(node, astroid.ImportFrom) and node.modname == name)
+
+    return check_if_import
+
+
+def combine_checks(checks: List[Callable]):
+
+    def combined_check(node: astroid.NodeNG):
+        for check in checks:
+            if not check(node):
+                return False
+
+        return True
+
+    return combined_check
+
+
 def write_tree(tree, path):
     with open(path, "w") as f:
         f.writelines([a + os.linesep for a in tree.lines])
 
 
-def backup_file(file_path, action):
-    # TODO
+class FakeInitFunction(astroid.FunctionDef):
+    def __init__(self):
 
-    if not os.path.exists(BACKUP_PATH):
-        os.makedirs(BACKUP_PATH, exist_ok=True)
+        name = "__init__"
+        lineno = 0
+        col_offset = 0
+        end_lineno = None
+        end_col_offset = None
+        parent = None
+        super().__init__(name, lineno, col_offset, parent, end_lineno=end_lineno, end_col_offset=end_col_offset)
 
-    if not os.path.exists(BACKUP_ID_FILE):
-        with open(BACKUP_ID_FILE, "w") as f:
-            pass
-    
-    with open(BACKUP_ID_FILE, "r") as f:
-        ids = [(int(a[0]), a[1]) for a in [x.split("!!!", 2) for x in f.readlines()]]
-    
-    new_id = (ids[-1][0] + 1) if len(ids) > 0 else 0
+        self.args = astroid.Arguments(
+            parent=self,
+            vararg=None,
+            kwarg=None
+        )
 
-    shutil.copyfile(file_path, os.path.join(BACKUP_PATH, f"{new_id}"))
-    
-    with open(BACKUP_ID_FILE, "a") as f:
-        f.write(f"{new_id}!!!{action}!!!{Path(file_path).absolute()}" + os.linesep)
+        self.args.kwonlyargs = []
+        self.args.args = [astroid.Name("self", 0, 0, self.args, end_lineno=0, end_col_offset=0)]

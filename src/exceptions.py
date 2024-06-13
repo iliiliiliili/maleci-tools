@@ -14,3 +14,11 @@ class NotFolderException(Exception):
 
 class NoArgumentException(Exception):
     pass
+
+class NoError(Exception):
+    def __init__(self, *args) -> None:
+        super().__init__(*args)
+    
+    @staticmethod
+    def really_not_an_exception(a, b):
+        return a + ValueError(b)

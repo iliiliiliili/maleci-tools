@@ -1149,13 +1149,3 @@ def old_name_main():
 
             for a in arg.all_results:
                 print(a)
-
-
-
-def old_name_main():
-    Fire()
-
-
-
-if __name__ == "__main__":
-    Fire()

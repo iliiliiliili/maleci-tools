@@ -8,11 +8,11 @@ from py.core import (
     insert_lines,
     line_number_to_line_index,
     parse_file,
-    backup_file,
-    write_tree
+    write_tree,
+    create_check_if_import
 )
 
-from core import find_files_in_folder, select_option, get_project_path, path_in_project, get_display_path
+from core import backup_file, find_files_in_folder, select_option, resolve_path, path_in_project, get_relative_path
 
 EXPECTED_ARGS = {
     "add fire": [("path", "file")]
@@ -31,14 +31,14 @@ def verify_and_fix_args(args, project):
     if args["path"] == "":
         args["path"] == "."
 
-    project_path = get_project_path(project)
+    project_path = resolve_path(project)
     args["path"] = path_in_project(args["path"], project_path)
 
     if os.path.isdir(args["path"]):
         files = find_files_in_folder(args["path"])
 
         options = [
-            f"{a[2]} in {get_display_path(a[0], project_path)}" for a in files 
+            f"{a[2]} in {get_relative_path(a[0], project_path)}" for a in files 
         ]
 
         index = select_option(options, FILE_SELECT_MESSAGE)
@@ -48,7 +48,7 @@ def verify_and_fix_args(args, project):
     return args
 
 
-def add_fire_to_tree(tree):
+def add_fire_to_tree(tree: astroid.Module):
 
     fire_import = "from fire import Fire".splitlines()
 
@@ -62,10 +62,7 @@ if __name__ == "__main__":
 
     old_name_main = lambda x: f"def old_name_main{('_' + x if x > 0 else '')}():"
 
-    def check_if_import_fire(node):
-        return (
-            isinstance(node, astroid.Import) and "fire" in [a[0] for a in node.names]
-        ) or (isinstance(node, astroid.ImportFrom) and node.modname == "fire")
+    check_if_import_fire = create_check_if_import("fire")
 
     def check_if_name_main_call(node):
 
