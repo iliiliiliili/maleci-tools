@@ -47,7 +47,13 @@ EXPECTED_ARGS = {
         ("yes", "y", "continue", "agree"),
         ("spaces", "indentation", "indentation_size", "indentation_spaces"),
         ("overwrite_tests", "rewrite_tests", "overwrite", "rewrite"),
-        ("make_scripts", "provide_infrastructure", "provide", "scripts", "infrastructure"),
+        (
+            "make_scripts",
+            "provide_infrastructure",
+            "provide",
+            "scripts",
+            "infrastructure",
+        ),
     ]
 }
 
@@ -62,9 +68,7 @@ DEFAULT_VALUES = {
     }
 }
 
-DO_NOT_ADD_TEST_TO_FILE = [
-    "__init__.py"
-]
+DO_NOT_ADD_TEST_TO_FILE = ["__init__.py"]
 
 REPLACE_FUNCTION_NAMES = {
     # original function: (test name, call string, True if needs object to be created first, True if uses arguments)
@@ -131,6 +135,47 @@ def verify_and_fix_args(args, project):
         raise NotFolderException()
 
     return args
+
+
+def make_github_workflow(spaces, project):
+    result = ["name: Unit tests", "on: [push]", "jobs:"]
+
+    job_lines = ["build:"]
+
+    build_lines = [
+        "runs-on: ubuntu-latest",
+        "strategy:",
+        indent_single("matrix", spaces),
+        indent_single('python: ["3.9", "3.10", "3.11"]', spaces, 2),
+        "steps:",
+    ]
+
+    step_lines = [
+        "- uses: actions/checkout@v4",
+        "- name: Setup Python",
+        indent_single("uses: actions/setup-python@v5", spaces),
+        indent_single("with:", spaces),
+        indent_single("python-version: ${{ matrix.python }}", spaces, 2),
+        "- name: Install requirements",
+        indent_single("run: pip install -r requirements.txt", spaces),
+        "- name: Run tests",
+        indent_single("run: bash run_tests.sh", spaces),
+    ]
+
+    insert_lines_with_indendtation(build_lines, -1, step_lines, spaces)
+    insert_lines_with_indendtation(job_lines, -1, build_lines, spaces)
+    insert_lines_with_indendtation(result, -1, job_lines, spaces)
+
+    folder = Path(project) / ".github" / "workflows"
+    file = folder / "unittest.yml"
+
+    os.makedirs(folder, exist_ok=True)
+
+    if os.path.exists(file):
+        print("Test workflow already exists")
+    else:
+        write_lines(result, file)
+        print("Created test workflow for github")
 
 
 def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
@@ -401,7 +446,7 @@ def add_unittest_for_file(
     spaces,
     overwrite_tests,
     project_path,
-    backup=True
+    backup=True,
 ):
     source_folder_path = resolve_path(source_folder)
 
@@ -440,7 +485,9 @@ def add_unittest_for_file(
         return None
 
 
-def add_unittests_to_folder(path, output, yes, overwrite_tests, spaces, make_scripts, project, backup=True):
+def add_unittests_to_folder(
+    path, output, yes, overwrite_tests, spaces, make_scripts, project, backup=True
+):
 
     project_path = resolve_path(project)
     files = find_files_in_folder(path)
@@ -459,7 +506,15 @@ def add_unittests_to_folder(path, output, yes, overwrite_tests, spaces, make_scr
             continue
 
         add_unittest_for_file(
-            file_path, name, subdir, path, output, spaces, overwrite_tests, project_path, backup=backup
+            file_path,
+            name,
+            subdir,
+            path,
+            output,
+            spaces,
+            overwrite_tests,
+            project_path,
+            backup=backup,
         )
 
     test_script_lines = [
@@ -473,3 +528,5 @@ def add_unittests_to_folder(path, output, yes, overwrite_tests, spaces, make_scr
             print("Test script already exists")
         else:
             write_lines(test_script_lines, test_script_file)
+
+        make_github_workflow(spaces, project)
