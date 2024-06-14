@@ -60,8 +60,8 @@ def py_filter(filename):
     return ".py" == filename[-3:]
 
 
-def find_files_in_folder(folder_path: str, filter=py_filter):
-    subdirs = os.walk(folder_path)
+def find_files_in_folder(folder: str, filter=py_filter):
+    subdirs = os.walk(folder)
 
     all_files = []
 

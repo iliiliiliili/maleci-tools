@@ -166,10 +166,7 @@ if __name__ == "__main__":
     return tree
 
 
-def add_fire_to_file(path, silent, backup=True):
+def add_fire_to_file(path, silent):
     tree = add_fire_to_tree(parse_file(path), silent)
-    
-    if backup:
-        backup_file(path, "add fire")
-
+    backup_file(path, "add fire")
     write_tree(tree, path)

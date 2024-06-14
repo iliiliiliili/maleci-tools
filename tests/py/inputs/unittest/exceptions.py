@@ -21,4 +21,4 @@ class NoError(Exception):
     
     @staticmethod
     def really_not_an_exception(a, b):
-        return a + str(ValueError(b))
+        return a + ValueError(b)

@@ -8,29 +8,16 @@ DEFAULT_SPACES = 4
 MAX_SINGLE_LINE_ARGS = 3
 
 
-def find_nodes_old(tree, check):
+def find_nodes(tree, check, surface=False, do_not_go_into=None, root=True):
 
     result = []
 
     if check(tree):
         result.append(tree)
-
-    if hasattr(tree, "body"):
-        for node in tree.body:
-            result += find_nodes_old(node, check)
-    elif hasattr(tree, "targets"):
-        for target in tree.targets:
-            result += find_nodes_old(target, check)
-
-    return result
-
-
-def find_nodes(tree, check, surface=False):
-
-    result = []
-
-    if check(tree):
-        result.append(tree)
+    
+    if do_not_go_into is not None and not root:
+        if do_not_go_into(tree):
+            return result
 
     if surface:
         for node in tree.get_children():
@@ -38,7 +25,7 @@ def find_nodes(tree, check, surface=False):
                 result.append(node)
     else:
         for node in tree.get_children():
-            result += find_nodes(node, check)
+            result += find_nodes(node, check, do_not_go_into=do_not_go_into, root=False)
 
     return result
 
@@ -214,7 +201,7 @@ def check_if_return(node: astroid.NodeNG):
 
 def check_if_function_returns(node: astroid.FunctionDef):
 
-    return_nodes = find_nodes(node, check_if_return, True)
+    return_nodes = find_nodes(node, check_if_return, False, check_if_function)
 
     for r in return_nodes:
         if r.value is not None:

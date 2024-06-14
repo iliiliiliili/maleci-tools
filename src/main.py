@@ -5,13 +5,7 @@ from exceptions import NoSelectionException
 from src.py import fire, unittest
 from fire import Fire
 
-COMMANDS = {
-    "add": ["fire", "unittest"]
-}
-
-
-def no_func(g):
-    return
+COMMANDS = {"add": ["fire", "unittest"]}
 
 
 def select_comand(group: str):
@@ -30,11 +24,21 @@ def add(command: str = "", *args, project=".", **kwargs):
         command = select_comand("add")
 
     if command == "fire":
-        command_args = get_args(args, kwargs, fire.EXPECTED_ARGS["add fire"], fire.DEFAULT_VALUES["add fire"])
+        command_args = get_args(
+            args,
+            kwargs,
+            fire.EXPECTED_ARGS["add fire"],
+            fire.DEFAULT_VALUES["add fire"],
+        )
         command_args = fire.verify_and_fix_args(command_args, project=project)
         fire.add_fire_to_file(**command_args)
     elif command == "unittest":
-        command_args = get_args(args, kwargs, unittest.EXPECTED_ARGS["add unittest"], unittest.DEFAULT_VALUES["add unittest"])
+        command_args = get_args(
+            args,
+            kwargs,
+            unittest.EXPECTED_ARGS["add unittest"],
+            unittest.DEFAULT_VALUES["add unittest"],
+        )
         command_args = unittest.verify_and_fix_args(command_args, project=project)
         unittest.add_unittests_to_folder(**command_args, project=project)
     else:

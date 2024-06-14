@@ -1,12 +1,12 @@
+from pathlib import Path
 import unittest
+import shutil
+import os
 
 from src.core import (
     get_args,
     py_filter,
     find_files_in_folder,
-    select_option,
-    select_continue,
-    select_continue_with_details,
     resolve_path,
     path_in_project,
     get_relative_path,
@@ -19,13 +19,17 @@ from src.core import (
     write_lines,
     backup_file,
 )
+from src.py.unittest import EXPECTED_ARGS, DEFAULT_VALUES
+
 class TestCore(unittest.TestCase):
 
     def test_get_args(self):
-        args = None
-        kwargs = None
-        expected_args = None
-        default_values = None
+        args = ["path", "target"]
+        kwargs = {
+            "spaces": 13, "no": True
+        }
+        expected_args = EXPECTED_ARGS["add unittest"]
+        default_values = DEFAULT_VALUES["add unittest"]
 
         output = get_args(
             args,
@@ -34,98 +38,73 @@ class TestCore(unittest.TestCase):
             default_values,
         )
 
-        self.assertEqual(output, None)
+        self.assertDictEqual(output, {
+            "path": "path",
+            "output": "target",
+            "spaces": 13,
+            "overwrite_tests": False,
+            "make_scripts": True,
+            "yes": False,
+        })
 
     def test_py_filter(self):
-        filename = None
+        filenames = ["a.py", "asd", "x.cpp", "x"]
 
-        output = py_filter(filename)
+        output = [py_filter(a) for a in filenames]
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, [True, False, False, False])
 
     def test_find_files_in_folder(self):
-        folder_path = None
-        filter = None
+        folder_path = "./"
+        filter = lambda name: name == "run_tests.sh"
 
         output = find_files_in_folder(folder_path, filter)
 
-        self.assertEqual(output, None)
-
-    def test_select_option(self):
-        options = None
-        message = None
-
-        output = select_option(options, message)
-
-        self.assertEqual(output, None)
-
-    def test_select_continue(self):
-        message = None
-
-        output = select_continue(message)
-
-        self.assertEqual(output, None)
-
-    def test_select_continue_with_details(self):
-        message = None
-        details_func = None
-        details_text = None
-
-        output = select_continue_with_details(message, details_func, details_text)
-
-        self.assertEqual(output, None)
+        self.assertEqual(len(output), 1)
 
     def test_resolve_path(self):
-        path = None
+        path = "./../."
 
         output = resolve_path(path)
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, Path("..").resolve().absolute())
 
     def test_path_in_project(self):
-        path = None
-        project_path = None
+        path = "py"
+        project_path = Path("./tests")
 
         output = path_in_project(path, project_path)
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, str(Path("./tests/py").absolute()))
 
     def test_get_relative_path(self):
-        path = None
-        project_path = None
+        path = "./tests/py"
+        project_path = Path("./tests")
 
         output = get_relative_path(path, project_path)
 
-        self.assertEqual(output, None)
-
-    def test_display_files(self):
-        files = None
-        project_path = None
-
-        display_files(files, project_path)
-
-        self.assertTrue(False)
+        self.assertEqual(output, Path("py"))
 
     def test_to_camel_case(self):
-        snake_str = None
+        snake_str = "snake_case"
 
         output = to_camel_case(snake_str)
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, "SnakeCase")
 
     def test_to_snake_case(self):
-        str = None
+        str = "CamelCase"
 
         output = to_snake_case(str)
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, "camel_case")
 
     def test_insert_lines_with_indendtation(self):
-        target = None
-        index = None
-        lines = None
-        spaces = None
-        indentation_level = None
+        target = ["start", "end"]
+        index = 1
+        lines = ["l1", "l2"]
+        spaces = 1
+        indentation_level = 1
 
         insert_lines_with_indendtation(
             target,
@@ -135,38 +114,46 @@ class TestCore(unittest.TestCase):
             indentation_level,
         )
 
-        self.assertTrue(False)
+        self.assertEqual(
+            target,
+            [
+                "start",
+                " l1",
+                " l2",
+                "end"
+            ]
+        )
 
     def test_indent(self):
-        lines = None
-        spaces = None
-        indentation_level = None
+        lines = ["l1", "l2"]
+        spaces = 1
+        indentation_level = 3
 
         output = indent(lines, spaces, indentation_level)
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, ["   l1", "   l2"])
 
     def test_indent_single(self):
-        line = None
-        spaces = None
-        indentation_level = None
+        line = "l1"
+        spaces = 3
+        indentation_level = 2
 
         output = indent_single(line, spaces, indentation_level)
 
-        self.assertEqual(output, None)
+        self.assertEqual(output, "      l1")
 
     def test_write_lines(self):
-        lines = None
-        path = None
+        lines = ["test test", "file"]
+        dir_path = "./tests/temp"
+        path = f"{dir_path}/write_lines_test.txt"
+
+        os.makedirs(dir_path, exist_ok=True)
 
         write_lines(lines, path)
 
-        self.assertTrue(False)
+        with open(path, "r") as f:
+            text_lines = f.readlines()
 
-    def test_backup_file(self):
-        file_path = None
-        action = None
+        shutil.rmtree(dir_path)
 
-        backup_file(file_path, action)
-
-        self.assertTrue(False)
+        self.assertEqual([a + os.linesep for a in lines], text_lines)

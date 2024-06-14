@@ -1,78 +1,173 @@
+import os
+from pathlib import Path
+import shutil
 import unittest
+
+import astroid
 
 from src.py.unittest import (
     verify_and_fix_args,
     make_test,
     add_unittest_for_file,
     add_unittests_to_folder,
+    EXPECTED_ARGS,
+    DEFAULT_VALUES,
 )
+from src.py.core import DEFAULT_SPACES
+
+from src.core import (
+    find_files_in_folder,
+    get_args,
+    indent_single,
+    resolve_path,
+    path_in_project,
+    select_continue_with_details,
+    display_files,
+    get_relative_path,
+    insert_lines_with_indendtation,
+    to_camel_case,
+    to_snake_case,
+    write_lines,
+    backup_file,
+)
+
+
 class TestUnittest(unittest.TestCase):
 
     def test_verify_and_fix_args(self):
-        args = None
-        project = None
+        args = get_args(
+            [],
+            {"source": "unittest", "output": "tmp"},
+            EXPECTED_ARGS["add unittest"],
+            DEFAULT_VALUES["add unittest"],
+        )
+        project = "./tests/py/inputs"
 
         output = verify_and_fix_args(args, project)
 
-        self.assertEqual(output, None)
+        self.assertEqual(
+            output,
+            {
+                "path": str(Path("./tests/py/inputs/unittest").absolute()),
+                "output": str(Path("./tests/py/inputs/tmp").absolute()),
+                "yes": False,
+                "spaces": DEFAULT_SPACES,
+                "overwrite_tests": False,
+                "make_scripts": True,
+            },
+        )
 
     def test_make_test(self):
-        tree = None
-        name = None
-        subdir = None
-        source_folder = None
-        spaces = None
-        project_path = None
+        code = """
+            def f():
+                pass
+            
+            def x():
+                return
+
+            def y():
+                return 1
+            
+            class z():
+                pass
+                
+            a = 10
+        """
+
+        tree = astroid.parse(code, "tmp")
+
+        name = "tmp.py"
+        subdir = "."
+        spaces = DEFAULT_SPACES
+        project_path = "."
 
         output = make_test(
             tree,
             name,
             subdir,
-            source_folder,
             spaces,
             project_path,
         )
 
-        self.assertEqual(output, None)
+        output = os.linesep.join(output)
+        output_tree = astroid.parse(output)
+
+        self.assertEqual(len(output_tree.body), 3 + 2)
+        self.assertEqual(len(output_tree.body[-2].body), 3)
+        self.assertEqual(len(output_tree.body[-1].body), 1)
 
     def test_add_unittest_for_file(self):
-        file_path = None
-        name = None
-        subdir = None
-        source_folder = None
-        output_folder = None
-        spaces = None
-        overwrite_tests = None
-        project_path = None
+        
+        project_path = resolve_path("./tests/py/inputs")
+        output_folder = resolve_path(f"{project_path}/temp")
+        source_folder = resolve_path(f"{project_path}/unittest")
+        expected_folder = resolve_path("./tests/py/expected/unittest")
+        files = find_files_in_folder(source_folder)
+        overwrite_tests = False
+        spaces = DEFAULT_SPACES
 
-        add_unittest_for_file(
-            file_path,
-            name,
-            subdir,
+        self.assertTrue(len(files) > 0)
+
+        for subdir, file_path, name in files:
+
+            test_file_path = str(add_unittest_for_file(
+                file_path,
+                name,
+                subdir,
+                source_folder,
+                output_folder,
+                spaces,
+                overwrite_tests,
+                project_path,
+            ))
+
+            expected_file_path = str(expected_folder / get_relative_path(test_file_path, output_folder))
+
+            with open(test_file_path, "r") as f:
+                test_source_text = f.read()
+
+            with open(expected_file_path, "r") as f:
+                expected_source_text = f.read()
+
+            self.assertEqual(test_source_text, expected_source_text)
+        
+        shutil.rmtree(output_folder)
+
+    def test_add_unittests_to_folder(self):
+
+        project_path = resolve_path("./tests/py/inputs")
+        output_folder = resolve_path(f"{project_path}/temp")
+        source_folder = resolve_path(f"{project_path}/unittest")
+        expected_folder = resolve_path("./tests/py/expected/unittest")
+        files = find_files_in_folder(source_folder)
+        overwrite_tests = False
+        spaces = DEFAULT_SPACES
+
+        self.assertTrue(len(files) > 0)
+
+        add_unittests_to_folder(
             source_folder,
             output_folder,
-            spaces,
+            True,
             overwrite_tests,
+            spaces,
+            False,
             project_path,
         )
 
-        self.assertTrue(False)
+        for subdir, _, name in files:
+            
+            test_folder_path = output_folder / get_relative_path(subdir, source_folder)
+            test_file_path = str(test_folder_path / ("test_" + name))
 
-    def test_add_unittests_to_folder(self):
-        path = None
-        output = None
-        yes = None
-        overwrite_tests = None
-        spaces = None
-        project = None
+            expected_file_path = str(expected_folder / get_relative_path(test_file_path, output_folder))
 
-        add_unittests_to_folder(
-            path,
-            output,
-            yes,
-            overwrite_tests,
-            spaces,
-            project,
-        )
+            with open(test_file_path, "r") as f:
+                test_source_text = f.read()
 
-        self.assertTrue(False)
+            with open(expected_file_path, "r") as f:
+                expected_source_text = f.read()
+
+            self.assertEqual(test_source_text, expected_source_text)
+        
+        shutil.rmtree(output_folder)

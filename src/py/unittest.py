@@ -15,7 +15,7 @@ from py.core import (
     DEFAULT_SPACES,
 )
 
-from core import (
+from src.core import (
     find_files_in_folder,
     indent_single,
     resolve_path,
@@ -47,6 +47,7 @@ EXPECTED_ARGS = {
         ("yes", "y", "continue", "agree"),
         ("spaces", "indentation", "indentation_size", "indentation_spaces"),
         ("overwrite_tests", "rewrite_tests", "overwrite", "rewrite"),
+        ("make_scripts", "provide_infrastructure", "provide", "scripts", "infrastructure"),
     ]
 }
 
@@ -57,6 +58,7 @@ DEFAULT_VALUES = {
         "yes": False,
         "spaces": DEFAULT_SPACES,
         "overwrite_tests": False,
+        "make_scripts": True,
     }
 }
 
@@ -131,7 +133,7 @@ def verify_and_fix_args(args, project):
     return args
 
 
-def make_test(tree: astroid.Module, name, subdir, source_folder, spaces, project_path):
+def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
 
     name = name.replace(".py", "")
 
@@ -143,7 +145,6 @@ def make_test(tree: astroid.Module, name, subdir, source_folder, spaces, project
 
     global_import_lines = ["import unittest"]
     local_import_lines = []
-    test_class_lines = lambda name: [f"class Test{name}(unittest.TestCase):"]
 
     classes = find_nodes(tree, check_if_class, True)
     functions = find_nodes(tree, check_if_function, True)
@@ -400,11 +401,12 @@ def add_unittest_for_file(
     spaces,
     overwrite_tests,
     project_path,
+    backup=True
 ):
     source_folder_path = resolve_path(source_folder)
 
     tree = parse_file(file_path)
-    test_lines = make_test(tree, name, subdir, source_folder, spaces, project_path)
+    test_lines = make_test(tree, name, subdir, spaces, project_path)
 
     output_path = Path(output_folder)
 
@@ -420,7 +422,7 @@ def add_unittest_for_file(
                 f"Test file already exists for {name} in {get_relative_path(subdir, project_path)}"
             )
         else:
-            if os.path.exists(file_path):
+            if os.path.exists(file_path) and backup:
                 backup_file(file_path, "overwrite test")
 
             write_lines(test_lines, file_path)
@@ -428,13 +430,17 @@ def add_unittest_for_file(
             print(
                 f"Created tests for {name} in {get_relative_path(subdir, project_path)}"
             )
+
+        return file_path
     else:
         print(
             f"Nothing to test for {name} in {get_relative_path(subdir, project_path)}"
         )
 
+        return None
 
-def add_unittests_to_folder(path, output, yes, overwrite_tests, spaces, project):
+
+def add_unittests_to_folder(path, output, yes, overwrite_tests, spaces, make_scripts, project, backup=True):
 
     project_path = resolve_path(project)
     files = find_files_in_folder(path)
@@ -447,22 +453,23 @@ def add_unittests_to_folder(path, output, yes, overwrite_tests, spaces, project)
         ):
             raise CancelException("")
 
-    for subdir, file_path, name in files[1:]:
+    for subdir, file_path, name in files:
 
         if name in DO_NOT_ADD_TEST_TO_FILE:
             continue
 
         add_unittest_for_file(
-            file_path, name, subdir, path, output, spaces, overwrite_tests, project_path
+            file_path, name, subdir, path, output, spaces, overwrite_tests, project_path, backup=backup
         )
 
     test_script_lines = [
         f"PYTHONPATH={get_relative_path(path, project_path)} python -m unittest discover -s {get_relative_path(output, project_path)}"
     ]
 
-    test_script_file = str(project_path / "run_tests.sh")
+    if make_scripts:
+        test_script_file = str(project_path / "run_tests.sh")
 
-    if os.path.exists(test_script_file):
-        print("Test script already exists")
-    else:
-        write_lines(test_script_lines, test_script_file)
+        if os.path.exists(test_script_file):
+            print("Test script already exists")
+        else:
+            write_lines(test_script_lines, test_script_file)
