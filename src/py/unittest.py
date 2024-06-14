@@ -145,7 +145,7 @@ def make_github_workflow(spaces, project):
     build_lines = [
         "runs-on: ubuntu-latest",
         "strategy:",
-        indent_single("matrix", spaces),
+        indent_single("matrix:", spaces),
         indent_single('python: ["3.9", "3.10", "3.11"]', spaces, 2),
         "steps:",
     ]
