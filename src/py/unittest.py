@@ -70,6 +70,8 @@ DEFAULT_VALUES = {
 
 DO_NOT_ADD_TEST_TO_FILE = ["__init__.py"]
 
+YAML_SPACES = 2
+
 REPLACE_FUNCTION_NAMES = {
     # original function: (test name, call string, True if needs object to be created first, True if uses arguments)
     "__init__": ("constructor", lambda class_name: class_name, False, True),
@@ -529,4 +531,4 @@ def add_unittests_to_folder(
         else:
             write_lines(test_script_lines, test_script_file)
 
-        make_github_workflow(spaces, project)
+        make_github_workflow(YAML_SPACES, project)
