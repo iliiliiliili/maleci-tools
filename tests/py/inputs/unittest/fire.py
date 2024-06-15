@@ -12,7 +12,7 @@ from py.core import (
     create_check_if_import,
 )
 
-from src.core import (
+from maleci.core import (
     backup_file,
     find_files_in_folder,
     select_option,

@@ -3,7 +3,7 @@ import unittest
 import shutil
 import os
 
-from src.core import (
+from maleci.core import (
     get_args,
     py_filter,
     find_files_in_folder,
@@ -19,7 +19,7 @@ from src.core import (
     write_lines,
     backup_file,
 )
-from src.py.unittest import EXPECTED_ARGS, DEFAULT_VALUES
+from maleci.py.unittest import EXPECTED_ARGS, DEFAULT_VALUES
 
 class TestCore(unittest.TestCase):
 

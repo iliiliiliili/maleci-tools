@@ -1,6 +1,6 @@
 import unittest
 
-from src.exceptions import (
+from maleci.exceptions import (
     NoSelectionException,
     CancelException,
     NotFileException,

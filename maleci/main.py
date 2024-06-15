@@ -1,8 +1,8 @@
 import os
 
-from core import get_args, select_option
-from exceptions import NoSelectionException
-from src.py import fire, unittest
+from maleci.core import get_args, select_option
+from maleci.exceptions import NoSelectionException
+from maleci.py import fire, unittest
 from fire import Fire
 
 COMMANDS = {"add": ["fire", "unittest"]}

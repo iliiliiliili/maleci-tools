@@ -4,7 +4,7 @@ import unittest
 
 import astroid
 
-from src.py.core import (
+from maleci.py.core import (
     find_nodes,
     infer_type,
     get_all_types,
@@ -25,7 +25,7 @@ from src.py.core import (
     write_tree,
 )
 
-from src.py.core import (
+from maleci.py.core import (
     FakeInitFunction,
 )
 

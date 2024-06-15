@@ -2,7 +2,7 @@ import astroid
 import os
 from pathlib import Path
 
-from py.core import (
+from maleci.py.core import (
     find_nodes,
     last_import_line_number,
     insert_lines,
@@ -12,7 +12,7 @@ from py.core import (
     create_check_if_import,
 )
 
-from src.core import (
+from maleci.core import (
     backup_file,
     find_files_in_folder,
     select_option,

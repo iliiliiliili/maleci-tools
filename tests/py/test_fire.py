@@ -3,13 +3,13 @@ from pathlib import Path
 import shutil
 import unittest
 
-from src.core import get_args, find_files_in_folder
-from src.py.core import (
+from maleci.core import get_args, find_files_in_folder
+from maleci.py.core import (
     parse_file,
     find_nodes,
     create_check_if_import,
 )
-from src.py.fire import (
+from maleci.py.fire import (
     verify_and_fix_args,
     check_if_fire_call,
     check_if_name_main_call,

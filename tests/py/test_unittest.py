@@ -5,7 +5,7 @@ import unittest
 
 import astroid
 
-from src.py.unittest import (
+from maleci.py.unittest import (
     verify_and_fix_args,
     make_test,
     add_unittest_for_file,
@@ -13,9 +13,9 @@ from src.py.unittest import (
     EXPECTED_ARGS,
     DEFAULT_VALUES,
 )
-from src.py.core import DEFAULT_SPACES
+from maleci.py.core import DEFAULT_SPACES
 
-from src.core import (
+from maleci.core import (
     find_files_in_folder,
     get_args,
     indent_single,

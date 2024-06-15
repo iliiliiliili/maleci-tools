@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Union
 from simple_term_menu import TerminalMenu
 
-from exceptions import NoArgumentException, NoSelectionException
+from maleci.exceptions import NoArgumentException, NoSelectionException
 
 BACKUP_PATH = "./backup"
 BACKUP_ID_FILE = os.path.join(BACKUP_PATH, ".id")

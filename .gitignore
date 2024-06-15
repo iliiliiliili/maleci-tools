@@ -1,3 +1,5 @@
 .vscode
+build
 backup
 *.pyc
+*.egg-info

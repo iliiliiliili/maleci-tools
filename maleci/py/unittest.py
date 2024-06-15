@@ -3,8 +3,8 @@ import astroid
 import os
 from pathlib import Path
 
-from exceptions import CancelException, NotFolderException
-from py.core import (
+from maleci.exceptions import CancelException, NotFolderException
+from maleci.py.core import (
     MAX_SINGLE_LINE_ARGS,
     FakeInitFunction,
     check_if_function_returns,
@@ -15,7 +15,7 @@ from py.core import (
     DEFAULT_SPACES,
 )
 
-from src.core import (
+from maleci.core import (
     find_files_in_folder,
     indent_single,
     resolve_path,
