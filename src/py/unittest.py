@@ -71,6 +71,7 @@ DEFAULT_VALUES = {
 DO_NOT_ADD_TEST_TO_FILE = ["__init__.py"]
 
 YAML_SPACES = 2
+UNITTEST_YAML_NAME = "unittest.yml"
 
 REPLACE_FUNCTION_NAMES = {
     # original function: (test name, call string, True if needs object to be created first, True if uses arguments)
@@ -139,8 +140,46 @@ def verify_and_fix_args(args, project):
     return args
 
 
+def make_readme_badge(project):
+
+    git_url = os.popen(f"cd {project}; git remote get-url origin").readline()
+
+    if len(git_url) > 0:
+        git_url = git_url.replace(".git", "").replace(os.linesep, "")
+    else:
+        git_url = "https://github.com/OWNER/REPOSITORY"
+
+    badge_url = f"{git_url}/actions/workflows/{UNITTEST_YAML_NAME}/badge.svg"
+    badge_text = f"![Unit Tests]({badge_url})"
+
+    project_path = Path(project)
+
+    files = os.listdir(project_path)
+    files = list(filter(lambda x: x.lower() == "readme.md", files))
+
+    if len(files) > 0:
+        readme_file = str(project_path / files[0])
+
+        with open(readme_file, "r") as f:
+            readme_lines = f.readlines()
+
+        for line in readme_lines:
+            if badge_text in line:
+                print(f"Badge is already in {files[0]}")
+                return
+
+        readme_lines.insert(0, badge_text)
+        write_lines(readme_lines, readme_file)
+        print(f"Added unittest badge to {files[0]}")
+    else:
+        readme_file = str(project_path / "README.md")
+        readme_lines = [badge_text]
+        write_lines(readme_lines, readme_file)
+        print("Created README.md with a unittest badge")
+
+
 def make_github_workflow(spaces, project):
-    result = ["name: Unit tests", "on: [push]", "jobs:"]
+    result = ["name: Unit Tests", "on: [push]", "jobs:"]
 
     job_lines = ["build:"]
 
@@ -169,7 +208,7 @@ def make_github_workflow(spaces, project):
     insert_lines_with_indendtation(result, -1, job_lines, spaces)
 
     folder = Path(project) / ".github" / "workflows"
-    file = folder / "unittest.yml"
+    file = folder / UNITTEST_YAML_NAME
 
     os.makedirs(folder, exist_ok=True)
 
@@ -532,3 +571,4 @@ def add_unittests_to_folder(
             write_lines(test_script_lines, test_script_file)
 
         make_github_workflow(YAML_SPACES, project)
+        make_readme_badge(project)
