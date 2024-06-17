@@ -7,7 +7,7 @@ Maleci tools
 SHORT_DESCRIPTION = """
 Maleci tools""".strip()
 
-DEPENDENCIES = ["astroid", "simple-term-menu"]
+DEPENDENCIES = ["astroid", "simple-term-menu", "fire"]
 
 TEST_DEPENDENCIES = []
 
