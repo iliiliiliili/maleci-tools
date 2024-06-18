@@ -73,7 +73,7 @@ def linux_add(command: str = "", *args, **kwargs):
     if command == "":
         command = select_comand("linux add")
     
-    if command == "lmod":
+    if command in ["lmod", "modules"]:
         linux_add_lmod(*args, **kwargs)
     else:
         print(f"Unknown command {command}")
