@@ -109,7 +109,7 @@ def select_continue_with_details(message, details_func, details_text="Details"):
 
 
 def resolve_path(path: str):
-    return Path(path).resolve()
+    return Path(path).expanduser().resolve()
 
 
 def path_in_project(path: Union[str, Path], project_path: Path):
