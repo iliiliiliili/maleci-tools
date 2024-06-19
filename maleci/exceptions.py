@@ -12,6 +12,9 @@ class NotFileException(Exception):
 class NotFolderException(Exception):
     pass
 
+class WrongVersionException(Exception):
+    pass
+
 class NoArgumentException(Exception):
     pass
 

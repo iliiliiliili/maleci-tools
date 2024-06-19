@@ -80,6 +80,24 @@ def linux_add(command: str = "", *args, **kwargs):
         return linux_add("", *args, **kwargs)
 
 
+def linux_install(command: str = "", *args, **kwargs):
+    if command == "":
+        command = select_comand("linux add")
+    
+    if command in ["lmod", "modules"]:
+        command_args = get_args(
+            args,
+            kwargs,
+            lmod.EXPECTED_ARGS["linux install lmod"],
+            lmod.DEFAULT_VALUES["linux install lmod"],
+        )
+        command_args = lmod.verify_and_fix_args_install(command_args)
+        lmod.install_lmod(**command_args)
+    else:
+        print(f"Unknown command {command}")
+        return linux_add("", *args, **kwargs)
+
+
 def linux(command: str = "", *args, **kwargs):
 
     if command == "":
@@ -87,6 +105,8 @@ def linux(command: str = "", *args, **kwargs):
     
     if command == "add":
         linux_add(*args, **kwargs)
+    elif command == "install":
+        linux_install(*args, **kwargs)
     else:
         print(f"Unknown command {command}")
         return linux("", *args, **kwargs)

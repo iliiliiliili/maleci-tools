@@ -79,13 +79,16 @@ def find_files_in_folder(folder: str, filter=py_filter):
     return all_files
 
 
-def select_option(options, message):
+def select_option(options, message, show_selected_option=True):
     print(message)
     menu = TerminalMenu(options)
     index = menu.show()
 
     if index is None:
         raise NoSelectionException("")
+
+    if show_selected_option:
+        print(options[index])
 
     return index
 
