@@ -98,9 +98,6 @@ def verify_and_fix_args_add(args):
 
 def verify_and_fix_args_install(args):
 
-    if not os.path.isdir(args["install_path"]):
-        raise NotFolderException()
-
     if args["version"] not in ALLOWED_VERSIONS["lmod"]:
         raise WrongVersionException()
 
