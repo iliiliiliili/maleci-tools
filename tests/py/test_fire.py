@@ -20,7 +20,7 @@ from maleci.py.fire import (
 class TestFire(unittest.TestCase):
 
     def test_verify_and_fix_args(self):
-        args = get_args([], {"file":"single.py"}, EXPECTED_ARGS["add fire"], DEFAULT_VALUES["add fire"])
+        args = get_args([], {"file":"single.py"}, EXPECTED_ARGS["py add fire"], DEFAULT_VALUES["py add fire"])
         project = "./tests/py"
 
         output = verify_and_fix_args(args, project)

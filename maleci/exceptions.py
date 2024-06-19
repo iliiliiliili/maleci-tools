@@ -13,7 +13,18 @@ class NotFolderException(Exception):
     pass
 
 class WrongVersionException(Exception):
-    pass
+    def __init__(self, version, options, name="version") -> None:
+        super().__init__()
+
+        self.version = version
+        self.options = options
+        self.name = name
+    
+    def __repr__(self) -> str:
+        return f"WrongVersionException({self.name}={self.version}, options={self.options})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
 class NoArgumentException(Exception):
     pass

@@ -28,8 +28,8 @@ class TestCore(unittest.TestCase):
         kwargs = {
             "spaces": 13, "no": True
         }
-        expected_args = EXPECTED_ARGS["add unittest"]
-        default_values = DEFAULT_VALUES["add unittest"]
+        expected_args = EXPECTED_ARGS["py add unittest"]
+        default_values = DEFAULT_VALUES["py add unittest"]
 
         output = get_args(
             args,

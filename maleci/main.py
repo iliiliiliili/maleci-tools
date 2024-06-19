@@ -3,14 +3,21 @@ import os
 from maleci.core import get_args, select_option
 from maleci.exceptions import NoSelectionException
 from maleci.py import fire, unittest
-from maleci.linux import lmod
+from maleci.linux import lmod, cuda
 from fire import Fire
 
 COMMANDS = {
-    "add": ["fire", "unittest"],
+    "": ["add", "linux", "py"],
+    "py": ["add"],
+    "py add": ["fire", "unittest"],
     "linux": ["add", "init", "install"],
-    "linux add": ["lmod", ],
-    "linux add lmod": ["cuda", ],
+    "linux add": [
+        "lmod",
+    ],
+    "linux add lmod": [
+        "cuda",
+    ],
+    "linux install": ["lmod", "cuda"],
 }
 
 
@@ -24,17 +31,17 @@ def select_comand(group: str):
     return options[index]
 
 
-def add(command: str = "", *args, project=".", **kwargs):
+def py_add(command: str = "", *args, project=".", **kwargs):
 
     if command == "":
-        command = select_comand("add")
+        command = select_comand("py add")
 
     if command == "fire":
         command_args = get_args(
             args,
             kwargs,
-            fire.EXPECTED_ARGS["add fire"],
-            fire.DEFAULT_VALUES["add fire"],
+            fire.EXPECTED_ARGS["py add fire"],
+            fire.DEFAULT_VALUES["py add fire"],
         )
         command_args = fire.verify_and_fix_args(command_args, project=project)
         fire.add_fire_to_file(**command_args)
@@ -42,22 +49,34 @@ def add(command: str = "", *args, project=".", **kwargs):
         command_args = get_args(
             args,
             kwargs,
-            unittest.EXPECTED_ARGS["add unittest"],
-            unittest.DEFAULT_VALUES["add unittest"],
+            unittest.EXPECTED_ARGS["py add unittest"],
+            unittest.DEFAULT_VALUES["py add unittest"],
         )
         command_args = unittest.verify_and_fix_args(command_args, project=project)
         unittest.add_unittests_to_folder(**command_args, project=project)
     else:
         print(f"Unknown command {command}")
-        return add("", *args, project=project, **kwargs)
+        return py_add("", *args, project=project, **kwargs)
 
     print()
+
+
+def py(command: str = "", *args, project=".", **kwargs):
+
+    if command == "":
+        command = select_comand("py")
+
+    if command == "add":
+        py_add(*args, project=project, **kwargs)
+    else:
+        print(f"Unknown command {command}")
+        return py("", *args, **kwargs)
 
 
 def linux_add_lmod(command: str = "", *args, **kwargs):
     if command == "":
         command = select_comand("linux add lmod")
-    
+
     if command == "cuda":
         command_args = get_args(
             args,
@@ -72,7 +91,7 @@ def linux_add_lmod(command: str = "", *args, **kwargs):
 def linux_add(command: str = "", *args, **kwargs):
     if command == "":
         command = select_comand("linux add")
-    
+
     if command in ["lmod", "modules"]:
         linux_add_lmod(*args, **kwargs)
     else:
@@ -82,8 +101,8 @@ def linux_add(command: str = "", *args, **kwargs):
 
 def linux_install(command: str = "", *args, **kwargs):
     if command == "":
-        command = select_comand("linux add")
-    
+        command = select_comand("linux install")
+
     if command in ["lmod", "modules"]:
         command_args = get_args(
             args,
@@ -93,16 +112,25 @@ def linux_install(command: str = "", *args, **kwargs):
         )
         command_args = lmod.verify_and_fix_args_install(command_args)
         lmod.install_lmod(**command_args)
+    elif command == "cuda":
+        command_args = get_args(
+            args,
+            kwargs,
+            cuda.EXPECTED_ARGS["linux install cuda"],
+            cuda.DEFAULT_VALUES["linux install cuda"],
+        )
+        command_args = cuda.verify_and_fix_args_install(command_args)
+        cuda.install_cuda(**command_args)
     else:
         print(f"Unknown command {command}")
-        return linux_add("", *args, **kwargs)
+        return linux_install("", *args, **kwargs)
 
 
 def linux(command: str = "", *args, **kwargs):
 
     if command == "":
         command = select_comand("linux")
-    
+
     if command == "add":
         linux_add(*args, **kwargs)
     elif command == "install":
@@ -112,6 +140,21 @@ def linux(command: str = "", *args, **kwargs):
         return linux("", *args, **kwargs)
 
 
+def main(command: str = "", *args, **kwargs):
+
+    if command == "":
+        command = select_comand("")
+
+    if command == "add":
+        py_add(*args, **kwargs)
+    elif command == "py":
+        py(*args, **kwargs)
+    elif command == "linux":
+        linux(*args, **kwargs)
+    else:
+        print(f"Unknown command {command}")
+        return main("", *args, **kwargs)
+
 
 if __name__ == "__main__":
-    Fire()
+    Fire(main)

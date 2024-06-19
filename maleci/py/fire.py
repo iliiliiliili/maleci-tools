@@ -21,10 +21,10 @@ from maleci.core import (
     get_relative_path,
 )
 
-EXPECTED_ARGS = {"add fire": [("path", "file"), "silent"]}
+EXPECTED_ARGS = {"py add fire": [("path", "file"), "silent"]}
 
 DEFAULT_VALUES = {
-    "add fire": {
+    "py add fire": {
         "path": ".",
         "silent": False,
     }
@@ -170,6 +170,6 @@ def add_fire_to_file(path, silent, backup=True):
     tree = add_fire_to_tree(parse_file(path), silent)
     
     if backup:
-        backup_file(path, "add fire")
+        backup_file(path, "py add fire")
 
     write_tree(tree, path)

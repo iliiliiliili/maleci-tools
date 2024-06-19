@@ -31,7 +31,7 @@ from maleci.core import (
 )
 
 EXPECTED_ARGS = {
-    "add unittest": [
+    "py add unittest": [
         ("path", "folder", "source", "sources", "source_path", "sources_path"),
         (
             "output",
@@ -58,7 +58,7 @@ EXPECTED_ARGS = {
 }
 
 DEFAULT_VALUES = {
-    "add unittest": {
+    "py add unittest": {
         "path": ".",
         "output": "tests",
         "yes": False,

@@ -4,17 +4,9 @@ import os
 from pathlib import Path
 
 from maleci.exceptions import CancelException, NotFolderException, WrongVersionException
+from maleci.linux.cuda import CUDA_PREFIX, find_cuda_versions
 from maleci.core import (
-    find_files_in_folder,
-    indent_single,
     resolve_path,
-    path_in_project,
-    select_continue_with_details,
-    display_files,
-    get_relative_path,
-    insert_lines_with_indendtation,
-    to_camel_case,
-    to_snake_case,
     write_lines,
     backup_file,
     select_option,
@@ -82,8 +74,6 @@ ALLOWED_VERSIONS = {
     "luarocks": ["3.3.1"],
 }
 
-CUDA_PREFIX = "cuda-"
-
 
 def verify_and_fix_args_add(args):
 
@@ -108,13 +98,6 @@ def verify_and_fix_args_install(args):
         raise WrongVersionException()
 
     return args
-
-
-def find_cuda_versions(cuda_path):
-    cuda_dirs = [a for a in os.listdir(cuda_path) if CUDA_PREFIX in a]
-    cuda_versions = [a.replace(CUDA_PREFIX, "") for a in cuda_dirs]
-
-    return cuda_versions
 
 
 def create_cuda_modulefile(version, cuda_path, file_path):

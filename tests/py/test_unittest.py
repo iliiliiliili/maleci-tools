@@ -38,8 +38,8 @@ class TestUnittest(unittest.TestCase):
         args = get_args(
             [],
             {"source": "unittest", "output": "tmp"},
-            EXPECTED_ARGS["add unittest"],
-            DEFAULT_VALUES["add unittest"],
+            EXPECTED_ARGS["py add unittest"],
+            DEFAULT_VALUES["py add unittest"],
         )
         project = "./tests/py/inputs"
 
