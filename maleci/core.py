@@ -6,7 +6,8 @@ from simple_term_menu import TerminalMenu
 
 from maleci.exceptions import NoArgumentException, NoSelectionException
 
-BACKUP_PATH = "./backup"
+
+BACKUP_PATH = Path.home() / ".maleci-backup"
 BACKUP_ID_FILE = os.path.join(BACKUP_PATH, ".id")
 
 
