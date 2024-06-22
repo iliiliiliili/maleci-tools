@@ -28,7 +28,7 @@ EXPECTED_ARGS = {
 
 DEFAULT_VALUES = {
     "linux install cuda": {
-        "versions": ["12.5", "12.1", "11.6"],
+        "versions": ["12.5", "12.1", "11.8"],
         "architecture": "x86_64",
         "distribution": "Ubuntu",
         "distribution_version": "20.04",
