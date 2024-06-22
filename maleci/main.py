@@ -11,7 +11,7 @@ COMMANDS = {
     "py": ["add", "init"],
     "py add": ["fire", "unittest"],
     "py init": ["torch"],
-    "py init torch": ["empty"],
+    "py init torch": ["empty", "mnist"],
     "linux": ["add", "init", "install"],
     "linux add": [
         "lmod",
@@ -75,8 +75,17 @@ def py_init_torch(command: str = "", *args, project=".", **kwargs):
             torch.EXPECTED_ARGS["py init torch empty"],
             torch.DEFAULT_VALUES["py init torch empty"],
         )
-        command_args = torch.verify_and_fix_args_init(command_args, project=project)
-        torch.init_pytorch(**command_args, project=project)
+        command_args = torch.verify_and_fix_args_init_empty(command_args, project=project)
+        torch.init_pytorch_empty(**command_args, project=project)
+    elif command in ["mnist"]:
+        command_args = get_args(
+            args,
+            kwargs,
+            torch.EXPECTED_ARGS["py init torch mnist"],
+            torch.DEFAULT_VALUES["py init torch mnist"],
+        )
+        command_args = torch.verify_and_fix_args_init_mnist(command_args, project=project)
+        torch.init_pytorch_mnist(**command_args, project=project)
     else:
         print(f"Unknown command {command}")
         return py_init("", *args, project=project, **kwargs)

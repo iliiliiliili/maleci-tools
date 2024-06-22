@@ -158,6 +158,14 @@ def write_lines(lines, path):
         f.writelines([a + os.linesep for a in lines])
 
 
+def create_file_from_code(code: str, path: str, project: str):
+    full_path = (resolve_path(project) / path).resolve()
+    full_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(full_path, "w") as f:
+        f.write(code)
+
+
 def backup_file(file_path, action):
     # TODO
 

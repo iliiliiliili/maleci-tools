@@ -11,13 +11,14 @@ from maleci.core import (
     path_in_project,
     get_relative_path,
     write_lines,
+    create_file_from_code,
 )
 
 from maleci.py.core import DEFAULT_SPACES, NO_FILE_NAMES, add_to_requirements
 
 EXPECTED_ARGS = {
     "py init torch empty": [
-        ("version", "v"),
+        ("torch_version", "version", "v"),
         ("name", "n"),
         ("python", "python_version", "pv"),
         ("cuda", "cuda_version", "cv"),
@@ -26,12 +27,20 @@ EXPECTED_ARGS = {
         ("main_path", "main"),
         ("requirements_path", "requirements"),
         ("spaces"),
-    ]
+    ],
+    "py init torch mnist": [
+        ("torch_version", "version", "v"),
+        ("name", "n"),
+        ("python", "python_version", "pv"),
+        ("cuda", "cuda_version", "cv"),
+        ("use_lmod", "lmod", "use_modules", "modules", "use_module", "module"),
+        ("spaces"),
+    ],
 }
 
 DEFAULT_VALUES = {
     "py init torch empty": {
-        "version": None,
+        "torch_version": None,
         "name": None,
         "python": "3.10",
         "cuda": None,
@@ -40,7 +49,15 @@ DEFAULT_VALUES = {
         "main_path": "main.py",
         "requirements_path": "requirements.txt",
         "spaces": DEFAULT_SPACES,
-    }
+    },
+    "py init torch mnist": {
+        "torch_version": None,
+        "name": None,
+        "python": "3.10",
+        "cuda": None,
+        "use_lmod": True,
+        "spaces": DEFAULT_SPACES,
+    },
 }
 
 INSTALL_COMMANDS = {
@@ -93,16 +110,16 @@ SELECT_VERSION_MESSAGE = "Select pytorch version"
 SELECT_CUDA_VERSION_MESSAGE = "Select cuda version"
 
 
-def verify_and_fix_args_init(args, project):
+def verify_and_fix_args_init_empty(args, project):
 
     params = INSTALL_COMMANDS
 
-    if args["version"] not in params:
+    if args["torch_version"] not in params:
         options = list(params.keys())
         index = select_option(options, SELECT_VERSION_MESSAGE)
-        args["version"] = options[index]
+        args["torch_version"] = options[index]
 
-    params = params[args["version"]]
+    params = params[args["torch_version"]]
 
     args["cuda"] = str(args["cuda"])
 
@@ -135,7 +152,19 @@ def verify_and_fix_args_init(args, project):
     if not os.path.isdir(project_path):
         raise ValueError("Project path is not a directory")
 
+    return args
 
+
+def verify_and_fix_args_init_mnist(args, project):
+    args = verify_and_fix_args_init_empty({
+        "main_path": None,
+        "install_script": DEFAULT_VALUES["py init torch empty"]["install_script"],
+        "requirements_path": DEFAULT_VALUES["py init torch empty"]["requirements_path"],
+        **args,
+    }, project)
+
+    del args["main_path"]
+    
     return args
 
 
@@ -169,8 +198,8 @@ def create_py_code_for_init(main_path, requirements_path, spaces):
         print(f"Requirements created at {requirements_path}.")
 
 
-def init_pytorch(
-    version,
+def init_pytorch_empty(
+    torch_version,
     name,
     python,
     cuda,
@@ -194,7 +223,7 @@ def init_pytorch(
         f"conda activate {name}",
         "",
         *([f"module load cuda/{cuda}", ""] if use_lmod else []),
-        INSTALL_COMMANDS[version][cuda],
+        INSTALL_COMMANDS[torch_version][cuda],
         "",
         f"pip install -r {get_relative_path(requirements_path, project_path)}",
     ]
@@ -205,3 +234,39 @@ def init_pytorch(
         write_lines(install_lines, install_script)
         print(f"Install script created at {install_script}. To launch it, use:")
         print(f"cd {project}; bash -i {install_script}")
+
+
+def init_pytorch_mnist(
+    torch_version,
+    name,
+    python,
+    cuda,
+    use_lmod,
+    install_script,
+    requirements_path,
+    spaces,
+    project,
+):
+
+    init_pytorch_empty(
+        torch_version,
+        name,
+        python,
+        cuda,
+        use_lmod,
+        install_script,
+        None,
+        requirements_path,
+        spaces,
+        project,
+    )
+
+    from maleci.py.torch_init_projects.mnist.main import CODE as MAIN_CODE
+    from maleci.py.torch_init_projects.mnist.models.mlp import CODE as MLP_CODE
+    from maleci.py.torch_init_projects.mnist.models.cnn import CODE as CNN_CODE
+
+    create_file_from_code(MAIN_CODE, "main.py", project)
+    create_file_from_code(MLP_CODE, "models/mlp.py", project)
+    create_file_from_code(CNN_CODE, "models/cnn.py", project)
+
+    print("Created project files")
