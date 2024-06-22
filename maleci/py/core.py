@@ -9,6 +9,7 @@ from maleci.core import write_lines
 
 DEFAULT_SPACES = 4
 MAX_SINGLE_LINE_ARGS = 3
+NO_FILE_NAMES = ["", ".", "<", ">"]
 
 
 def find_nodes(tree, check, surface=False, do_not_go_into=None, root=True):

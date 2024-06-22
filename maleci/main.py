@@ -11,6 +11,7 @@ COMMANDS = {
     "py": ["add", "init"],
     "py add": ["fire", "unittest"],
     "py init": ["torch"],
+    "py init torch": ["empty"],
     "linux": ["add", "init", "install"],
     "linux add": [
         "lmod",
@@ -62,20 +63,33 @@ def py_add(command: str = "", *args, project=".", **kwargs):
     print()
 
 
+def py_init_torch(command: str = "", *args, project=".", **kwargs):
+
+    if command == "":
+        command = select_comand("py init torch")
+
+    if command in ["empty", "pytorch", "."]:
+        command_args = get_args(
+            args,
+            kwargs,
+            torch.EXPECTED_ARGS["py init torch empty"],
+            torch.DEFAULT_VALUES["py init torch empty"],
+        )
+        command_args = torch.verify_and_fix_args_init(command_args, project=project)
+        torch.init_pytorch(**command_args, project=project)
+    else:
+        print(f"Unknown command {command}")
+        return py_init("", *args, project=project, **kwargs)
+
+    print()
+
 def py_init(command: str = "", *args, project=".", **kwargs):
 
     if command == "":
         command = select_comand("py init")
 
     if command in ["torch", "pytorch"]:
-        command_args = get_args(
-            args,
-            kwargs,
-            torch.EXPECTED_ARGS["py init torch"],
-            torch.DEFAULT_VALUES["py init torch"],
-        )
-        command_args = torch.verify_and_fix_args_init(command_args, project=project)
-        torch.init_pytorch(**command_args, project=project)
+        py_init_torch(*args, project=".", **kwargs)
     else:
         print(f"Unknown command {command}")
         return py_init("", *args, project=project, **kwargs)
