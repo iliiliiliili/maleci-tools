@@ -10,6 +10,8 @@ from maleci.py.core import (
     parse_file,
     write_tree,
     create_check_if_import,
+    add_to_requirements,
+    NO_FILE_NAMES
 )
 
 from maleci.core import (
@@ -21,12 +23,13 @@ from maleci.core import (
     get_relative_path,
 )
 
-EXPECTED_ARGS = {"py add fire": [("path", "file"), "silent"]}
+EXPECTED_ARGS = {"py add fire": [("path", "file"), "silent", ("requirements_path", "requirements")]}
 
 DEFAULT_VALUES = {
     "py add fire": {
         "path": ".",
         "silent": False,
+        "requirements_path": "requirements.txt",
     }
 }
 
@@ -39,6 +42,13 @@ def verify_and_fix_args(args, project):
         args["path"] == "."
 
     project_path = resolve_path(project)
+    args["path"] = path_in_project(args["path"], project_path)
+
+    if args["requirements_path"] in NO_FILE_NAMES:
+        args["requirements_path"] = None
+    else:
+        args["requirements_path"] = path_in_project(args["requirements_path"], project_path)
+
     args["path"] = path_in_project(args["path"], project_path)
 
     if os.path.isdir(args["path"]):
@@ -166,10 +176,13 @@ if __name__ == "__main__":
     return tree
 
 
-def add_fire_to_file(path, silent, backup=True):
+def add_fire_to_file(path, silent, requirements_path, backup=True):
     tree = add_fire_to_tree(parse_file(path), silent)
     
     if backup:
         backup_file(path, "py add fire")
 
     write_tree(tree, path)
+
+    if requirements_path is not None:
+        add_to_requirements(["fire"], requirements_path)

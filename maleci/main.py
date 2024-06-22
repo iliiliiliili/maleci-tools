@@ -185,7 +185,7 @@ def main(command: str = "", *args, **kwargs):
 
     if command == "add":
         py_add(*args, **kwargs)
-    if command == "init":
+    elif command == "init":
         py_init(*args, **kwargs)
     elif command == "py":
         py(*args, **kwargs)
