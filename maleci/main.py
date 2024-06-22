@@ -2,14 +2,15 @@ import os
 
 from maleci.core import get_args, select_option
 from maleci.exceptions import NoSelectionException
-from maleci.py import fire, unittest
+from maleci.py import fire, unittest, torch
 from maleci.linux import lmod, cuda
 from fire import Fire
 
 COMMANDS = {
-    "": ["add", "linux", "py"],
-    "py": ["add"],
+    "": ["add", "init", "linux", "py"],
+    "py": ["add", "init"],
     "py add": ["fire", "unittest"],
+    "py init": ["torch"],
     "linux": ["add", "init", "install"],
     "linux add": [
         "lmod",
@@ -61,6 +62,27 @@ def py_add(command: str = "", *args, project=".", **kwargs):
     print()
 
 
+def py_init(command: str = "", *args, project=".", **kwargs):
+
+    if command == "":
+        command = select_comand("py init")
+
+    if command in ["torch", "pytorch"]:
+        command_args = get_args(
+            args,
+            kwargs,
+            torch.EXPECTED_ARGS["py init torch"],
+            torch.DEFAULT_VALUES["py init torch"],
+        )
+        command_args = torch.verify_and_fix_args_init(command_args, project=project)
+        torch.init_pytorch(**command_args, project=project)
+    else:
+        print(f"Unknown command {command}")
+        return py_init("", *args, project=project, **kwargs)
+
+    print()
+
+
 def py(command: str = "", *args, project=".", **kwargs):
 
     if command == "":
@@ -68,6 +90,8 @@ def py(command: str = "", *args, project=".", **kwargs):
 
     if command == "add":
         py_add(*args, project=project, **kwargs)
+    elif command == "init":
+        py_init(*args, project=project, **kwargs)
     else:
         print(f"Unknown command {command}")
         return py("", *args, **kwargs)
@@ -147,6 +171,8 @@ def main(command: str = "", *args, **kwargs):
 
     if command == "add":
         py_add(*args, **kwargs)
+    if command == "init":
+        py_init(*args, **kwargs)
     elif command == "py":
         py(*args, **kwargs)
     elif command == "linux":

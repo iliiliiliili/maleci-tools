@@ -3,3 +3,5 @@ build
 backup
 *.pyc
 *.egg-info
+
+test_projects

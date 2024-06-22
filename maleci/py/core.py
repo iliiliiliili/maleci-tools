@@ -1,8 +1,11 @@
 import os
-from typing import Callable, List
+from pathlib import Path
+from typing import Callable, List, Union
 import astroid
 import astroid.arguments
 import astroid.exceptions
+
+from maleci.core import write_lines
 
 DEFAULT_SPACES = 4
 MAX_SINGLE_LINE_ARGS = 3
@@ -14,7 +17,7 @@ def find_nodes(tree, check, surface=False, do_not_go_into=None, root=True):
 
     if check(tree):
         result.append(tree)
-    
+
     if do_not_go_into is not None and not root:
         if do_not_go_into(tree):
             return result
@@ -237,6 +240,27 @@ def write_tree(tree, path):
         f.writelines([a + os.linesep for a in tree.lines])
 
 
+def add_to_requirements(requrements_to_add: List[str], file: Union[str, Path]):
+
+    existing_requirement_lines = []
+
+    if os.path.exists(file):
+        with open(file) as f:
+            existing_requirement_lines = [a.rstrip() for a in f.readlines()]
+
+    for r in requrements_to_add:
+        exists = False
+        for er in existing_requirement_lines:
+            if er.split("=")[0] == r:
+                exists = True
+                break
+
+        if not exists:
+            existing_requirement_lines.append(r)
+
+    write_lines(existing_requirement_lines, file)
+
+
 class FakeInitFunction(astroid.FunctionDef):
     def __init__(self):
 
@@ -246,13 +270,18 @@ class FakeInitFunction(astroid.FunctionDef):
         end_lineno = None
         end_col_offset = None
         parent = None
-        super().__init__(name, lineno, col_offset, parent, end_lineno=end_lineno, end_col_offset=end_col_offset)
-
-        self.args = astroid.Arguments(
-            parent=self,
-            vararg=None,
-            kwarg=None
+        super().__init__(
+            name,
+            lineno,
+            col_offset,
+            parent,
+            end_lineno=end_lineno,
+            end_col_offset=end_col_offset,
         )
 
+        self.args = astroid.Arguments(parent=self, vararg=None, kwarg=None)
+
         self.args.kwonlyargs = []
-        self.args.args = [astroid.Name("self", 0, 0, self.args, end_lineno=0, end_col_offset=0)]
+        self.args.args = [
+            astroid.Name("self", 0, 0, self.args, end_lineno=0, end_col_offset=0)
+        ]
