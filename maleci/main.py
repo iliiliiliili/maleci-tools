@@ -2,16 +2,17 @@ import os
 
 from maleci.core import get_args, select_option
 from maleci.exceptions import NoSelectionException
-from maleci.py import fire, unittest, torch
+from maleci.py import fire, pip, unittest, torch
 from maleci.linux import lmod, cuda
 from fire import Fire
 
 COMMANDS = {
-    "": ["add", "init", "linux", "py"],
-    "py": ["add", "init"],
+    "": ["add", "init", "pip", "linux", "py"],
+    "py": ["add", "init", "pip"],
     "py add": ["fire", "unittest"],
     "py init": ["torch"],
     "py init torch": ["empty", "mnist"],
+    "py pip": ["install"],
     "linux": ["add", "init", "install"],
     "linux add": [
         "lmod",
@@ -106,6 +107,27 @@ def py_init(command: str = "", *args, project=".", **kwargs):
     print()
 
 
+def py_pip(command: str = "", *args, project=".", **kwargs):
+
+    if command == "":
+        command = select_comand("py pip")
+
+    if command in ["install", "i"]:
+        command_args = get_args(
+            args,
+            kwargs,
+            pip.EXPECTED_ARGS["py pip install"],
+            pip.DEFAULT_VALUES["py pip install"],
+        )
+        command_args = pip.verify_and_fix_args(command_args, project=project)
+        pip.pip_install(**command_args)
+    else:
+        print(f"Unknown command {command}")
+        return py_pip("", *args, project=project, **kwargs)
+
+    print()
+
+
 def py(command: str = "", *args, project=".", **kwargs):
 
     if command == "":
@@ -196,6 +218,8 @@ def main(command: str = "", *args, **kwargs):
         py_add(*args, **kwargs)
     elif command == "init":
         py_init(*args, **kwargs)
+    elif command == "pip":
+        py_pip(*args, **kwargs)
     elif command == "py":
         py(*args, **kwargs)
     elif command == "linux":

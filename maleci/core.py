@@ -15,17 +15,28 @@ def get_args(args, kwargs, expected_args, default_values):
 
     result = {}
 
-    for i, arg_value in enumerate(args):
-        if len(expected_args) > i:
+    if expected_args[0] is None:
+    
+        result = {
+            "args": args
+        }
+    else:
+        for i, arg_value in enumerate(args):
 
-            arg_name = expected_args[i]
+            if len(expected_args) > i:
 
-            if isinstance(arg_name, tuple):
-                arg_name = arg_name[0]
+                arg_name = expected_args[i]
 
-            result[arg_name] = arg_value
+                if isinstance(arg_name, tuple):
+                    arg_name = arg_name[0]
+
+                result[arg_name] = arg_value
 
     for arg_names in expected_args:
+
+        if arg_names is None:
+            continue
+
         if isinstance(arg_names, tuple):
             arg_name = arg_names[0]
         else:
