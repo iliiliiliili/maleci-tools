@@ -14,7 +14,7 @@ from py.core import (
 
 from maleci.core import (
     backup_file,
-    find_files_in_folder,
+    find_code_files_in_folder,
     select_option,
     resolve_path,
     path_in_project,
@@ -42,7 +42,7 @@ def verify_and_fix_args(args, project):
     args["path"] = path_in_project(args["path"], project_path)
 
     if os.path.isdir(args["path"]):
-        files = find_files_in_folder(args["path"])
+        files = find_code_files_in_folder(args["path"])
 
         options = [f"{a[2]} in {get_relative_path(a[0], project_path)}" for a in files]
 

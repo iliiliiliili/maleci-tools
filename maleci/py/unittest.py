@@ -16,7 +16,7 @@ from maleci.py.core import (
 )
 
 from maleci.core import (
-    find_files_in_folder,
+    find_code_files_in_folder,
     indent_single,
     resolve_path,
     path_in_project,
@@ -68,7 +68,8 @@ DEFAULT_VALUES = {
     }
 }
 
-DO_NOT_ADD_TEST_TO_FILE = ["__init__.py"]
+DO_NOT_ADD_TESTS_TO_FILE = ["__init__.py"]
+DO_NOT_ADD_TESTS_TO_FOLDER = ["build"]
 
 YAML_SPACES = 2
 UNITTEST_YAML_NAME = "unittest.yml"
@@ -497,16 +498,18 @@ def add_unittest_for_file(
     output_path = Path(output_folder)
 
     if len(test_lines) > 0:
-        test_folder_path = output_path / get_relative_path(subdir, source_folder_path)
+        # Modify the folder path to include test_ prefix for each directory level
+        rel_path = get_relative_path(subdir, source_folder_path)
+        test_folder_parts = ["test_" + p if p else p for p in rel_path.parts]
+        test_folder_path = output_path.joinpath(*test_folder_parts)
         file_path = str(test_folder_path / ("test_" + name))
 
         os.makedirs(str(test_folder_path), exist_ok=True)
-        
+
         # Create __init__.py in test folder
         init_file = test_folder_path / "__init__.py"
         if not os.path.exists(init_file):
-            open(init_file, 'a').close()
-            print(f"Created {get_relative_path(init_file, project_path)}")
+            open(init_file, "a").close()
 
         if os.path.exists(file_path) and not overwrite_tests:
             print(
@@ -536,7 +539,10 @@ def add_unittests_to_folder(
 ):
 
     project_path = resolve_path(project)
-    files = find_files_in_folder(path)
+
+    # Add output folder to excluded folders to prevent creating tests for test files
+    excluded = DO_NOT_ADD_TESTS_TO_FOLDER + [Path(output).name]
+    files = find_code_files_in_folder(path, excluded_folders=excluded)
 
     if not yes:
         if not select_continue_with_details(
@@ -548,7 +554,7 @@ def add_unittests_to_folder(
 
     for subdir, file_path, name in files:
 
-        if name in DO_NOT_ADD_TEST_TO_FILE:
+        if name in DO_NOT_ADD_TESTS_TO_FILE:
             continue
 
         add_unittest_for_file(

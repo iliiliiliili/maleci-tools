@@ -3,7 +3,7 @@ from pathlib import Path
 import shutil
 import unittest
 
-from maleci.core import get_args, find_files_in_folder
+from maleci.core import get_args, find_code_files_in_folder
 from maleci.py.core import (
     parse_file,
     find_nodes,
@@ -33,7 +33,7 @@ class TestFire(unittest.TestCase):
 
     def test_add_fire_to_file(self):
 
-        files = [a[1] for a in find_files_in_folder("./tests/py/inputs/fire")]
+        files = [a[1] for a in find_code_files_in_folder("./tests/py/inputs/fire")]
 
         for file in files:
             

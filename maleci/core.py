@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 from typing import Union
 from simple_term_menu import TerminalMenu
+import fnmatch
 
 from maleci.exceptions import NoArgumentException, NoSelectionException
 
@@ -16,10 +17,8 @@ def get_args(args, kwargs, expected_args, default_values):
     result = {}
 
     if expected_args[0] is None:
-    
-        result = {
-            "args": args
-        }
+
+        result = {"args": args}
     else:
         for i, arg_value in enumerate(args):
 
@@ -72,18 +71,71 @@ def py_filter(filename):
     return ".py" == filename[-3:]
 
 
-def find_files_in_folder(folder: str, filter=py_filter):
-    subdirs = os.walk(folder)
+def read_gitignore(project_path: Path):
+    """Read .gitignore file and return list of patterns"""
+    gitignore_file = project_path / ".gitignore"
+    if not gitignore_file.exists():
+        return []
 
+    with open(gitignore_file) as f:
+        patterns = [
+            line.strip()
+            for line in f.readlines()
+            if line.strip() and not line.startswith("#")
+        ]
+    return patterns
+
+
+def matches_gitignore(path: str, base_path: Path, patterns: list) -> bool:
+    """Check if path matches any gitignore pattern"""
+    rel_path = Path(path).relative_to(base_path)
+    return any(
+        (
+            fnmatch.fnmatch(str(rel_path), pattern)
+            or (
+                len(rel_path.parts) > 0
+                and fnmatch.fnmatch(str(rel_path.parts[0]), pattern)
+            )
+        )
+        for pattern in patterns
+    )
+
+
+def find_code_files_in_folder(folder: str, filter=py_filter, excluded_folders=None):
+    subdirs = os.walk(folder)
+    base_path = Path(folder)
     all_files = []
 
+    # Read gitignore patterns once
+    gitignore_patterns = read_gitignore(base_path)
+
     for subdir, _, files in subdirs:
+        # Skip if this is a top-level excluded folder
+        if excluded_folders:
+            rel_path = Path(subdir).relative_to(base_path)
+            if len(rel_path.parts) > 0 and rel_path.parts[0] in excluded_folders:
+                continue
+
+        # Skip if directory matches gitignore
+        if gitignore_patterns and matches_gitignore(
+            subdir, base_path, gitignore_patterns
+        ):
+            continue
+
         for file in files:
+            file_path = os.path.join(subdir, file)
             if filter(file):
+
+                # Skip if file matches gitignore
+                if gitignore_patterns and matches_gitignore(
+                    file_path, base_path, gitignore_patterns
+                ):
+                    continue
+
                 all_files.append(
                     (
                         subdir,
-                        os.path.join(subdir, file),
+                        file_path,
                         file,
                     )
                 )
@@ -93,19 +145,14 @@ def find_files_in_folder(folder: str, filter=py_filter):
 
 def select_option(options, message, show_selected_option=True):
     print(message)
-    menu = TerminalMenu(options, raise_error_on_interrupt=True)
-    
-    try:
-        index = menu.show()
-    except KeyboardInterrupt:
-        print("Exiting")
-        exit(0)
+    menu = TerminalMenu(options)
+    index = menu.show()
 
     if index is None:
         raise NoSelectionException("")
 
     if show_selected_option:
-        print("\033[92m    " + options[index] + "\033[0m")  # Green color
+        print(options[index])
 
     return index
 

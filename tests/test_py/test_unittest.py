@@ -16,7 +16,7 @@ from maleci.py.unittest import (
 from maleci.py.core import DEFAULT_SPACES
 
 from maleci.core import (
-    find_files_in_folder,
+    find_code_files_in_folder,
     get_args,
     indent_single,
     resolve_path,
@@ -102,7 +102,7 @@ class TestUnittest(unittest.TestCase):
         output_folder = resolve_path(f"{project_path}/temp")
         source_folder = resolve_path(f"{project_path}/unittest")
         expected_folder = resolve_path("./tests/py/expected/unittest")
-        files = find_files_in_folder(source_folder)
+        files = find_code_files_in_folder(source_folder)
         overwrite_tests = False
         spaces = DEFAULT_SPACES
 
@@ -139,7 +139,7 @@ class TestUnittest(unittest.TestCase):
         output_folder = resolve_path(f"{project_path}/temp")
         source_folder = resolve_path(f"{project_path}/unittest")
         expected_folder = resolve_path("./tests/py/expected/unittest")
-        files = find_files_in_folder(source_folder)
+        files = find_code_files_in_folder(source_folder)
         overwrite_tests = False
         spaces = DEFAULT_SPACES
 

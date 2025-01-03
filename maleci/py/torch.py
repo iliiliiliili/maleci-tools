@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 
 from maleci.core import (
-    backup_file,
-    find_files_in_folder,
     indent_single,
     select_option,
     resolve_path,

@@ -6,7 +6,7 @@ import os
 from maleci.core import (
     get_args,
     py_filter,
-    find_files_in_folder,
+    find_code_files_in_folder,
     resolve_path,
     path_in_project,
     get_relative_path,
@@ -58,7 +58,7 @@ class TestCore(unittest.TestCase):
         folder_path = "./"
         filter = lambda name: name == "run_tests.sh"
 
-        output = find_files_in_folder(folder_path, filter)
+        output = find_code_files_in_folder(folder_path, filter)
 
         self.assertEqual(len(output), 1)
 

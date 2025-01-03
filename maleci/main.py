@@ -1,7 +1,7 @@
 import os
 
 from maleci.core import get_args, select_option
-from maleci.exceptions import NoSelectionException, VerificationCancelledException
+from maleci.exceptions import CancelException, NoSelectionException, VerificationCancelledException
 from maleci.py import fire, pip, unittest, torch
 from maleci.linux import lmod, cuda
 from fire import Fire
@@ -52,14 +52,17 @@ def py_add(command: str = "", *args, project=".", **kwargs):
             except VerificationCancelledException:
                 return py_add("", *args, project=project, **kwargs)
         elif command == "unittest":
-            command_args = get_args(
-                args,
-                kwargs,
-                unittest.EXPECTED_ARGS["py add unittest"],
-                unittest.DEFAULT_VALUES["py add unittest"],
-            )
-            command_args = unittest.verify_and_fix_args(command_args, project=project)
-            unittest.add_unittests_to_folder(**command_args, project=project)
+            try:
+                command_args = get_args(
+                    args,
+                    kwargs,
+                    unittest.EXPECTED_ARGS["py add unittest"],
+                    unittest.DEFAULT_VALUES["py add unittest"],
+                )
+                command_args = unittest.verify_and_fix_args(command_args, project=project)
+                unittest.add_unittests_to_folder(**command_args, project=project)
+            except CancelException:
+                return py_add("", *args, project=project, **kwargs)
         else:
             print(f"Unknown command {command}")
             return py_add("", *args, project=project, **kwargs)
