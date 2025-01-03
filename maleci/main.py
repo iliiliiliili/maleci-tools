@@ -7,11 +7,12 @@ from maleci.linux import lmod, cuda
 from fire import Fire
 
 COMMANDS = {
-    "": ["add", "init", "pip", "linux", "py"],
-    "py": ["add", "init", "pip"],
+    "": ["add", "init", "install", "pip", "linux"],
+    "py": ["add", "init", "install", "pip"],
     "py add": ["fire", "unittest"],
     "py init": ["torch"],
     "py init torch": ["empty", "mnist"],
+    "py install": ["torch"],
     "py pip": ["install"],
     "linux": ["add", "init", "install"],
     "linux add": [
@@ -126,6 +127,32 @@ def py_init(command: str = "", *args, project=".", **kwargs):
         return py("", *args, project=project, **kwargs)
 
 
+def py_install(command: str = "", *args, project=".", **kwargs):
+    try:
+        if command == "":
+            command = select_comand("py install")
+
+        if command == "torch":
+            try:
+                command_args = get_args(
+                    args,
+                    kwargs,
+                    torch.EXPECTED_ARGS["py install torch"],
+                    torch.DEFAULT_VALUES["py install torch"],
+                )
+                command_args = torch.verify_and_fix_args_init_empty(command_args, project=project)
+                torch.install_pytorch(**command_args, project=project)
+            except VerificationCancelledException:
+                return py_install("", *args, project=project, **kwargs)
+        else:
+            print(f"Unknown command {command}")
+            return py_install("", *args, project=project, **kwargs)
+
+        print()
+    except NoSelectionException:
+        return py("", *args, project=project, **kwargs)
+
+
 def py_pip(command: str = "", *args, project=".", **kwargs):
     try:
         if command == "":
@@ -158,6 +185,10 @@ def py(command: str = "", *args, project=".", **kwargs):
             py_add(*args, project=project, **kwargs)
         elif command == "init":
             py_init(*args, project=project, **kwargs)
+        elif command == "install":
+            py_install(*args, project=project, **kwargs)
+        elif command == "pip":
+            py_pip(*args, project=project, **kwargs)
         else:
             print(f"Unknown command {command}")
             return py("", *args, **kwargs)
@@ -261,6 +292,8 @@ def main(command: str = "", *args, **kwargs):
             py_add(*args, **kwargs)
         elif command == "init":
             py_init(*args, **kwargs)
+        elif command == "install":
+            py_install(*args, **kwargs)
         elif command == "pip":
             py_pip(*args, **kwargs)
         elif command == "py":

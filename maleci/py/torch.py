@@ -22,7 +22,7 @@ EXPECTED_ARGS = {
         ("python", "python_version", "pv"),
         ("cuda", "cuda_version", "cv"),
         ("use_lmod", "lmod", "use_modules", "modules", "use_module", "module"),
-        ("install_script", "script", "install"),
+        ("install_script", "script", "install", "i"),
         ("main_path", "main"),
         ("requirements_path", "requirements"),
         ("spaces"),
@@ -34,6 +34,14 @@ EXPECTED_ARGS = {
         ("cuda", "cuda_version", "cv"),
         ("use_lmod", "lmod", "use_modules", "modules", "use_module", "module"),
         ("spaces"),
+    ],
+    "py install torch": [
+        ("torch_version", "version", "v"),
+        ("name", "n"),
+        ("python", "python_version", "pv"),
+        ("cuda", "cuda_version", "cv"),
+        ("use_lmod", "lmod", "use_modules", "modules", "use_module", "module"),
+        ("install_script", "script", "install", "i"),
     ],
 }
 
@@ -56,6 +64,14 @@ DEFAULT_VALUES = {
         "cuda": None,
         "use_lmod": True,
         "spaces": DEFAULT_SPACES,
+    },
+    "py install torch": {
+        "torch_version": None,
+        "name": None,
+        "python": "3.10",
+        "cuda": None,
+        "use_lmod": True,
+        "install_script": None,
     },
 }
 
@@ -141,21 +157,6 @@ def verify_and_fix_args_init_empty(args, project):
         args["install_script"] = path_in_project(args["install_script"], project_path)
         if os.path.exists(args["install_script"]):
             raise ValueError(f"Install script already exists at {args['install_script']}")
-    
-    if args["main_path"] in NO_FILE_NAMES:
-        args["main_path"] = None
-    else:
-        args["main_path"] = path_in_project(args["main_path"], project_path)
-        if os.path.exists(args["main_path"]):
-            raise ValueError(f"Main file already exists at {args['main_path']}")
-
-    if args["requirements_path"] in NO_FILE_NAMES:
-        args["requirements_path"] = None
-    else:
-        args["requirements_path"] = path_in_project(args["requirements_path"], project_path)
-
-    if not os.path.isdir(project_path):
-        raise ValueError("Project path is not a directory")
 
     return args
 
@@ -172,6 +173,42 @@ def verify_and_fix_args_init_mnist(args, project):
     
     return args
 
+def verify_and_fix_args_install(args, project):
+    params = INSTALL_COMMANDS
+
+    if args["torch_version"] not in params:
+        try:
+            options = list(params.keys())
+            index = select_option(options, SELECT_VERSION_MESSAGE)
+            args["torch_version"] = options[index]
+        except NoSelectionException:
+            raise VerificationCancelledException()
+
+    params = params[args["torch_version"]]
+
+    args["cuda"] = str(args["cuda"])
+
+    if args["cuda"] not in params:
+        try:
+            options = list(params.keys())
+            index = select_option(options, SELECT_CUDA_VERSION_MESSAGE)
+            args["cuda"] = options[index]
+        except NoSelectionException:
+            raise VerificationCancelledException()
+
+    project_path = resolve_path(project)
+
+    if args["install_script"] in NO_FILE_NAMES:
+        args["install_script"] = None
+    else:
+        args["install_script"] = path_in_project(args["install_script"], project_path)
+        if os.path.exists(args["install_script"]):
+            raise ValueError(f"Install script already exists at {args['install_script']}")
+    
+    if not os.path.isdir(project_path):
+        raise ValueError("Project path is not a directory")
+
+    return args
 
 def create_py_code_for_init(main_path, requirements_path, spaces):
 
@@ -196,11 +233,11 @@ def create_py_code_for_init(main_path, requirements_path, spaces):
 
     if main_path is not None:
         write_lines(main_lines, main_path)
-        print(f"Main python script created at {main_path}.")
+        print(f"Main python script created at \033[93m{main_path}\033[0m")
 
     if requirements_path is not None:
         add_to_requirements(["fire"], requirements_path)
-        print(f"Requirements created at {requirements_path}.")
+        print(f"Requirements created at \033[93m{requirements_path}\033[0m")
 
 
 def init_pytorch_empty(
@@ -237,8 +274,8 @@ def init_pytorch_empty(
 
     if install_script is not None:
         write_lines(install_lines, install_script)
-        print(f"Install script created at {install_script}. To launch it, use:")
-        print(f"cd {project}; bash -i {install_script}")
+        print(f"Install script created at \033[93m{install_script}\033[0m. To launch it, use:")
+        print(f"cd \033[93m{project}\033[0m; bash -i \033[93m{install_script}\033[0m")
 
 
 def init_pytorch_mnist(
@@ -275,3 +312,27 @@ def init_pytorch_mnist(
     create_file_from_code(CNN_CODE, "models/cnn.py", project)
 
     print("Created project files")
+
+
+def install_pytorch(torch_version=None, name=None, python="3.10", cuda=None, 
+                   use_lmod=True, install_script="install.sh", project="."):
+    
+    if name is None:
+        name = Path(project).absolute().name
+
+    install_lines = [
+        "#!/bin/bash -i",
+        "",
+        f"conda create -n {name} python={python}",
+        f"conda activate {name}",
+        "",
+        *([f"module load cuda/{cuda}", ""] if use_lmod else []),
+        INSTALL_COMMANDS[torch_version][cuda],
+    ]
+
+    if install_script is None:
+        print(INSTALL_COMMANDS[torch_version][cuda])
+    else:
+        write_lines(install_lines, install_script)
+        print(f"Install script created at \033[93m{install_script}\033[0m. To launch it, use:")
+        print(f"cd \033[93m{project}\033[0m; bash -i \033[93m{install_script}\033[0m")
