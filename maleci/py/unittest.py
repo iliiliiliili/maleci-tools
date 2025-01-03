@@ -497,11 +497,16 @@ def add_unittest_for_file(
     output_path = Path(output_folder)
 
     if len(test_lines) > 0:
-
         test_folder_path = output_path / get_relative_path(subdir, source_folder_path)
         file_path = str(test_folder_path / ("test_" + name))
 
         os.makedirs(str(test_folder_path), exist_ok=True)
+        
+        # Create __init__.py in test folder
+        init_file = test_folder_path / "__init__.py"
+        if not os.path.exists(init_file):
+            open(init_file, 'a').close()
+            print(f"Created {get_relative_path(init_file, project_path)}")
 
         if os.path.exists(file_path) and not overwrite_tests:
             print(
