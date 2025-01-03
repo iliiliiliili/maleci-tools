@@ -166,7 +166,7 @@ def make_readme_badge(project):
         readme_file = str(project_path / files[0])
 
         with open(readme_file, "r") as f:
-            readme_lines = f.readlines()
+            readme_lines = [line.strip() for line in f.readlines()]
 
         for line in readme_lines:
             if badge_text in line:
