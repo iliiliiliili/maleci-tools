@@ -56,7 +56,7 @@ def verify_and_fix_args(args, project):
     if os.path.isdir(args["path"]):
         files = find_code_files_in_folder(args["path"])
 
-        options = [f"{a[2]} in {get_relative_path(a[0], project_path)}" for a in files]
+        options = [f"{a[2]} in \033[93m{get_relative_path(a[0], project_path)}\033[0m" for a in files]
         try:
             index = select_option(options, FILE_SELECT_MESSAGE)
             args["path"] = files[index][1]
@@ -143,9 +143,8 @@ if __name__ == "__main__":
         insert_lines(tree, import_location, fire_import)
     else:
         if not silent:
-            print(
-                f"Fire import already included into {tree.name if len(tree.name) > 0 else tree.path}"
-            )
+            path = tree.name if len(tree.name) > 0 else tree.path
+            print(f"Fire import already included into \033[93m{path}\033[0m")
 
     if has_name_main_call:
 
@@ -156,9 +155,8 @@ if __name__ == "__main__":
             if len(fire_calls) > 0:
                 has_fire_call = True
                 if not silent:
-                    print(
-                        f"Fire call already included into {tree.name if len(tree.name) > 0 else tree.path} "
-                    )
+                    path = tree.name if len(tree.name) > 0 else tree.path
+                    print(f"Fire call already included into \033[93m{path}\033[0m")
             else:
                 tree.lines[line_number_to_line_index(tree, node.lineno)] = (
                     old_name_main(i)
@@ -174,7 +172,8 @@ if __name__ == "__main__":
 
         insert_lines(tree, -1, fire_call_lines)
         if not silent:
-            print(f"Added fire to {tree.name if len(tree.name) > 0 else tree.path}")
+            path = tree.name if len(tree.name) > 0 else tree.path
+            print(f"Added fire to \033[93m{path}\033[0m")
 
     return tree
 

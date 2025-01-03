@@ -44,7 +44,7 @@ def verify_and_fix_args(args, project):
     if os.path.isdir(args["path"]):
         files = find_code_files_in_folder(args["path"])
 
-        options = [f"{a[2]} in {get_relative_path(a[0], project_path)}" for a in files]
+        options = [f"{a[2]} in \033[93m{get_relative_path(a[0], project_path)}\033[0m" for a in files]
 
         index = select_option(options, FILE_SELECT_MESSAGE)
 

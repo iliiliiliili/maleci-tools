@@ -540,18 +540,14 @@ def add_unittest_for_file(
             open(init_file, "a").close()
 
         if os.path.exists(file_path) and not overwrite_tests:
-            print(
-                f"Test file already exists for {name} in {get_relative_path(subdir, project_path)}"
-            )
+            print(f"Test file already exists for {name} in \033[93m{get_relative_path(subdir, project_path)}\033[0m")
         else:
             if os.path.exists(file_path) and backup:
                 backup_file(file_path, "overwrite test")
 
             write_lines(test_lines, file_path)
 
-            print(
-                f"Created tests for {name} in {get_relative_path(subdir, project_path)}"
-            )
+            print(f"Created tests for {name} in \033[93m{get_relative_path(subdir, project_path)}\033[0m")
 
         return file_path
     else:

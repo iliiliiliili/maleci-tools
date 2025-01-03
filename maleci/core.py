@@ -146,13 +146,18 @@ def find_code_files_in_folder(folder: str, filter=py_filter, excluded_folders=No
 def select_option(options, message, show_selected_option=True):
     print(message)
     menu = TerminalMenu(options)
-    index = menu.show()
+
+    try:
+        index = menu.show()
+    except KeyboardInterrupt:
+        print("Exiting")
+        exit(0)
 
     if index is None:
         raise NoSelectionException("")
 
     if show_selected_option:
-        print(options[index])
+        print(f"\033[92m    {options[index]}\033[0m")
 
     return index
 
@@ -189,7 +194,7 @@ def get_relative_path(path: Union[str, Path], project_path: Path):
 
 def display_files(files, project_path: Path):
     for file in files:
-        print(f"{file[2]} in {get_relative_path(file[0], project_path)}")
+        print(f"{file[2]} in \033[93m{get_relative_path(file[0], project_path)}\033[0m")
 
 
 def to_camel_case(snake_str):
