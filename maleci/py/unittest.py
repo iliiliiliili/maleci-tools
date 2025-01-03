@@ -240,21 +240,26 @@ def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
         return to_snake_case(class_name)
 
     def create_function_call_test_lines(function: astroid.FunctionDef, class_name=None):
-
         name = function.name
+
+        # Modify property handling - create value access test instead of function call
+        is_property = any(isinstance(decorator, astroid.Name) and decorator.name == 'property' 
+            for decorator in function.decorators.nodes) if function.decorators else False
 
         is_creator = name == "__init__"
 
         if name in REPLACE_FUNCTION_NAMES:
-            name, create_call_str, needs_object, uses_args = REPLACE_FUNCTION_NAMES[
-                name
-            ]
+            name, create_call_str, needs_object, uses_args = REPLACE_FUNCTION_NAMES[name]
         else:
-            create_call_str = (
-                lambda class_name: f"{'' if class_name is None else class_name + '.'}{name}"
-            )
-            needs_object = class_name is not None
-            uses_args = True
+            if is_property:
+                # For properties, just access the value instead of calling
+                create_call_str = lambda class_name: f"{class_name}.{name}"
+                needs_object = True
+                uses_args = False
+            else:
+                create_call_str = lambda class_name: f"{'' if class_name is None else class_name + '.'}{name}"
+                needs_object = class_name is not None
+                uses_args = True
 
         if needs_object:
             class_name = create_object_name(class_name)
@@ -431,8 +436,10 @@ def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
                 function_lines = create_function_test_lines(
                     function, init_function, name
                 )
-                test_lines.append("")
-                insert_lines_with_indendtation(test_lines, -1, function_lines, spaces)
+                # Only add test if function is not a property
+                if function_lines:
+                    test_lines.append("")
+                    insert_lines_with_indendtation(test_lines, -1, function_lines, spaces)
 
         return test_lines
 
