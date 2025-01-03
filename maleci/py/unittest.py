@@ -155,7 +155,8 @@ def make_readme_badge(project):
         git_url = "https://github.com/OWNER/REPOSITORY"
 
     badge_url = f"{git_url}/actions/workflows/{UNITTEST_YAML_NAME}/badge.svg"
-    badge_text = f"![Unit Tests]({badge_url})"
+    actions_url = f"{git_url}/actions"
+    badge_text = f"[![Unit Tests]({badge_url})]({actions_url})"
 
     project_path = Path(project)
 
