@@ -142,11 +142,15 @@ def verify_and_fix_args(args, project):
 
 
 def make_readme_badge(project):
-
     git_url = os.popen(f"cd {project}; git remote get-url origin").readline()
 
     if len(git_url) > 0:
-        git_url = git_url.replace(".git", "").replace(os.linesep, "")
+        git_url = git_url.replace(os.linesep, "")
+        # Convert SSH URL format to HTTPS format
+        if git_url.startswith("git@"):
+            # Transform git@github.com:user/repo.git to https://github.com/user/repo
+            git_url = "https://" + git_url.replace(":", "/").split("@")[1]
+        git_url = git_url.replace(".git", "")
     else:
         git_url = "https://github.com/OWNER/REPOSITORY"
 
@@ -243,13 +247,25 @@ def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
         name = function.name
 
         # Modify property handling - create value access test instead of function call
-        is_property = any(isinstance(decorator, astroid.Name) and decorator.name == 'property' 
-            for decorator in function.decorators.nodes) if function.decorators else False
+        is_property = (
+            False
+            if isinstance(function, FakeInitFunction)
+            else (
+                any(
+                    isinstance(decorator, astroid.Name) and decorator.name == "property"
+                    for decorator in function.decorators.nodes
+                )
+                if function.decorators
+                else False
+            )
+        )
 
         is_creator = name == "__init__"
 
         if name in REPLACE_FUNCTION_NAMES:
-            name, create_call_str, needs_object, uses_args = REPLACE_FUNCTION_NAMES[name]
+            name, create_call_str, needs_object, uses_args = REPLACE_FUNCTION_NAMES[
+                name
+            ]
         else:
             if is_property:
                 # For properties, just access the value instead of calling
@@ -257,7 +273,9 @@ def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
                 needs_object = True
                 uses_args = False
             else:
-                create_call_str = lambda class_name: f"{'' if class_name is None else class_name + '.'}{name}"
+                create_call_str = (
+                    lambda class_name: f"{'' if class_name is None else class_name + '.'}{name}"
+                )
                 needs_object = class_name is not None
                 uses_args = True
 
@@ -439,7 +457,9 @@ def make_test(tree: astroid.Module, name, subdir, spaces, project_path):
                 # Only add test if function is not a property
                 if function_lines:
                     test_lines.append("")
-                    insert_lines_with_indendtation(test_lines, -1, function_lines, spaces)
+                    insert_lines_with_indendtation(
+                        test_lines, -1, function_lines, spaces
+                    )
 
         return test_lines
 
