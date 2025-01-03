@@ -41,15 +41,15 @@ class TestUnittest(unittest.TestCase):
             EXPECTED_ARGS["py add unittest"],
             DEFAULT_VALUES["py add unittest"],
         )
-        project = "./tests/py/inputs"
+        project = "./tests/test_py/inputs"
 
         output = verify_and_fix_args(args, project)
 
         self.assertEqual(
             output,
             {
-                "path": str(Path("./tests/py/inputs/unittest").absolute()),
-                "output": str(Path("./tests/py/inputs/tmp").absolute()),
+                "path": str(Path("./tests/test_py/inputs/unittest").absolute()),
+                "output": str(Path("./tests/test_py/inputs/tmp").absolute()),
                 "yes": False,
                 "spaces": DEFAULT_SPACES,
                 "overwrite_tests": False,
@@ -97,11 +97,11 @@ class TestUnittest(unittest.TestCase):
         self.assertEqual(len(output_tree.body[-1].body), 1)
 
     def test_add_unittest_for_file(self):
-        
-        project_path = resolve_path("./tests/py/inputs")
+
+        project_path = resolve_path("./tests/test_py/inputs")
         output_folder = resolve_path(f"{project_path}/temp")
         source_folder = resolve_path(f"{project_path}/unittest")
-        expected_folder = resolve_path("./tests/py/expected/unittest")
+        expected_folder = resolve_path("./tests/test_py/expected/unittest")
         files = find_code_files_in_folder(source_folder)
         overwrite_tests = False
         spaces = DEFAULT_SPACES
@@ -110,18 +110,22 @@ class TestUnittest(unittest.TestCase):
 
         for subdir, file_path, name in files:
 
-            test_file_path = str(add_unittest_for_file(
-                file_path,
-                name,
-                subdir,
-                source_folder,
-                output_folder,
-                spaces,
-                overwrite_tests,
-                project_path,
-            ))
+            test_file_path = str(
+                add_unittest_for_file(
+                    file_path,
+                    name,
+                    subdir,
+                    source_folder,
+                    output_folder,
+                    spaces,
+                    overwrite_tests,
+                    project_path,
+                )
+            )
 
-            expected_file_path = str(expected_folder / get_relative_path(test_file_path, output_folder))
+            expected_file_path = str(
+                expected_folder / get_relative_path(test_file_path, output_folder)
+            )
 
             with open(test_file_path, "r") as f:
                 test_source_text = f.read()
@@ -130,15 +134,15 @@ class TestUnittest(unittest.TestCase):
                 expected_source_text = f.read()
 
             self.assertEqual(test_source_text, expected_source_text)
-        
+
         shutil.rmtree(output_folder)
 
     def test_add_unittests_to_folder(self):
 
-        project_path = resolve_path("./tests/py/inputs")
+        project_path = resolve_path("./tests/test_py/inputs")
         output_folder = resolve_path(f"{project_path}/temp")
         source_folder = resolve_path(f"{project_path}/unittest")
-        expected_folder = resolve_path("./tests/py/expected/unittest")
+        expected_folder = resolve_path("./tests/test_py/expected/unittest")
         files = find_code_files_in_folder(source_folder)
         overwrite_tests = False
         spaces = DEFAULT_SPACES
@@ -156,11 +160,15 @@ class TestUnittest(unittest.TestCase):
         )
 
         for subdir, _, name in files:
-            
-            test_folder_path = output_folder / get_relative_path(subdir, source_folder)
+
+            rel_path = get_relative_path(subdir, source_folder)
+            test_folder_parts = ["test_" + p if p else p for p in rel_path.parts]
+            test_folder_path = Path(output_folder).joinpath(*test_folder_parts)
             test_file_path = str(test_folder_path / ("test_" + name))
 
-            expected_file_path = str(expected_folder / get_relative_path(test_file_path, output_folder))
+            expected_file_path = str(
+                expected_folder / get_relative_path(test_file_path, output_folder)
+            )
 
             with open(test_file_path, "r") as f:
                 test_source_text = f.read()
@@ -169,5 +177,5 @@ class TestUnittest(unittest.TestCase):
                 expected_source_text = f.read()
 
             self.assertEqual(test_source_text, expected_source_text)
-        
+
         shutil.rmtree(output_folder)

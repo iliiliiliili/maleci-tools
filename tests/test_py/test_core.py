@@ -200,7 +200,7 @@ class TestCore(unittest.TestCase):
         self.assertEqual(len(output.body), 5)
 
     def test_create_trees_from_folder(self):
-        folder_path = "./src"
+        folder_path = "./maleci"
 
         output = create_trees_from_folder(folder_path)
 

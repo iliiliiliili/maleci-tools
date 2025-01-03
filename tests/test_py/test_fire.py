@@ -21,13 +21,14 @@ class TestFire(unittest.TestCase):
 
     def test_verify_and_fix_args(self):
         args = get_args([], {"file":"single.py"}, EXPECTED_ARGS["py add fire"], DEFAULT_VALUES["py add fire"])
-        project = "./tests/py"
+        project = "./tests/test_py"
 
         output = verify_and_fix_args(args, project)
 
         self.assertEqual(output, {
-            "path": str(Path("./tests/py/single.py").absolute()),
+            "path": str(Path("./tests/test_py/single.py").absolute()),
             "silent": False,
+            "requirements_path": str(Path("./tests/test_py/requirements.txt").absolute()),
         })
 
 
