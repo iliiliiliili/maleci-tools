@@ -23,6 +23,8 @@ from maleci.core import (
     get_relative_path,
 )
 
+from maleci.exceptions import NoSelectionException, VerificationCancelledException
+
 EXPECTED_ARGS = {"py add fire": [("path", "file"), "silent", ("requirements_path", "requirements")]}
 
 DEFAULT_VALUES = {
@@ -55,10 +57,11 @@ def verify_and_fix_args(args, project):
         files = find_files_in_folder(args["path"])
 
         options = [f"{a[2]} in {get_relative_path(a[0], project_path)}" for a in files]
-
-        index = select_option(options, FILE_SELECT_MESSAGE)
-
-        args["path"] = files[index][1]
+        try:
+            index = select_option(options, FILE_SELECT_MESSAGE)
+            args["path"] = files[index][1]
+        except NoSelectionException:
+            raise VerificationCancelledException()
 
     return args
 

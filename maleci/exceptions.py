@@ -1,5 +1,3 @@
-
-
 class NoSelectionException(Exception):
     pass
 
@@ -27,6 +25,9 @@ class WrongVersionException(Exception):
         return self.__repr__()
 
 class NoArgumentException(Exception):
+    pass
+
+class VerificationCancelledException(Exception):
     pass
 
 class NoError(Exception):

@@ -3,7 +3,7 @@ import astroid
 import os
 from pathlib import Path
 
-from maleci.exceptions import CancelException, NotFolderException, WrongVersionException
+from maleci.exceptions import CancelException, NotFolderException, WrongVersionException, NoSelectionException, VerificationCancelledException
 from maleci.linux.cuda import CUDA_PREFIX, find_cuda_versions
 from maleci.core import (
     resolve_path,
@@ -201,16 +201,19 @@ def add_cuda_modulefiles(
     action_script_path = temp_path / "cuda" / "move-modulefiles.sh"
 
     if sudo == "ask":
-        sudo = (
-            select_option(
-                [
-                    f"Use sudo to move modulefiles to {path}",
-                    f"Do not use sudo, create a script ({action_script_path}) to be used by a sudo-user to move modulefiles to {path}",
-                ],
-                "Use sudo?",
+        try:
+            sudo = (
+                select_option(
+                    [
+                        f"Use sudo to move modulefiles to {path}",
+                        f"Do not use sudo, create a script ({action_script_path}) to be used by a sudo-user to move modulefiles to {path}",
+                    ],
+                    "Use sudo?",
+                )
+                == 0
             )
-            == 0
-        )
+        except NoSelectionException:
+            raise VerificationCancelledException()
     else:
         sudo = isinstance(sudo, bool) and sudo == True
 
@@ -266,16 +269,19 @@ def install_lmod(version, lua_version, luarocks_version, install_path, modulfile
     action_script_path = temp_path / "install-lmod.sh"
 
     if sudo == "ask":
-        sudo = (
-            select_option(
-                [
-                    f"Use sudo to install lmod",
-                    f"Do not use sudo, create a script ({action_script_path}) to be used by a sudo-user to install lmod",
-                ],
-                "Use sudo?",
+        try:
+            sudo = (
+                select_option(
+                    [
+                        f"Use sudo to install lmod",
+                        f"Do not use sudo, create a script ({action_script_path}) to be used by a sudo-user to install lmod",
+                    ],
+                    "Use sudo?",
+                )
+                == 0
             )
-            == 0
-        )
+        except NoSelectionException:
+            raise VerificationCancelledException()
     else:
         sudo = isinstance(sudo, bool) and sudo == True
 

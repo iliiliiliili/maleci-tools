@@ -3,7 +3,7 @@ import astroid
 import os
 from pathlib import Path
 
-from maleci.exceptions import CancelException, NotFolderException, WrongVersionException
+from maleci.exceptions import CancelException, NotFolderException, WrongVersionException, NoSelectionException, VerificationCancelledException
 from maleci.core import (
     resolve_path,
     write_lines,
@@ -325,16 +325,19 @@ def install_cuda(
     action_script_path = temp_path / "install-cuda.sh"
 
     if sudo == "ask":
-        sudo = (
-            select_option(
-                [
-                    f"Use sudo to install cuda",
-                    f"Do not use sudo, create a script ({action_script_path}) to be used by a sudo-user to install cuda",
-                ],
-                "Use sudo?",
+        try:
+            sudo = (
+                select_option(
+                    [
+                        f"Use sudo to install cuda",
+                        f"Do not use sudo, create a script ({action_script_path}) to be used by a sudo-user to install cuda",
+                    ],
+                    "Use sudo?",
+                )
+                == 0
             )
-            == 0
-        )
+        except NoSelectionException:
+            raise VerificationCancelledException()
     else:
         sudo = isinstance(sudo, bool) and sudo == True
 

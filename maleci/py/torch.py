@@ -15,6 +15,7 @@ from maleci.core import (
 )
 
 from maleci.py.core import DEFAULT_SPACES, NO_FILE_NAMES, add_to_requirements
+from maleci.exceptions import NoSelectionException, VerificationCancelledException
 
 EXPECTED_ARGS = {
     "py init torch empty": [
@@ -115,18 +116,24 @@ def verify_and_fix_args_init_empty(args, project):
     params = INSTALL_COMMANDS
 
     if args["torch_version"] not in params:
-        options = list(params.keys())
-        index = select_option(options, SELECT_VERSION_MESSAGE)
-        args["torch_version"] = options[index]
+        try:
+            options = list(params.keys())
+            index = select_option(options, SELECT_VERSION_MESSAGE)
+            args["torch_version"] = options[index]
+        except NoSelectionException:
+            raise VerificationCancelledException()
 
     params = params[args["torch_version"]]
 
     args["cuda"] = str(args["cuda"])
 
     if args["cuda"] not in params:
-        options = list(params.keys())
-        index = select_option(options, SELECT_CUDA_VERSION_MESSAGE)
-        args["cuda"] = options[index]
+        try:
+            options = list(params.keys())
+            index = select_option(options, SELECT_CUDA_VERSION_MESSAGE)
+            args["cuda"] = options[index]
+        except NoSelectionException:
+            raise VerificationCancelledException()
 
     project_path = resolve_path(project)
 

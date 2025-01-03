@@ -93,14 +93,19 @@ def find_files_in_folder(folder: str, filter=py_filter):
 
 def select_option(options, message, show_selected_option=True):
     print(message)
-    menu = TerminalMenu(options)
-    index = menu.show()
+    menu = TerminalMenu(options, raise_error_on_interrupt=True)
+    
+    try:
+        index = menu.show()
+    except KeyboardInterrupt:
+        print("Exiting")
+        exit(0)
 
     if index is None:
         raise NoSelectionException("")
 
     if show_selected_option:
-        print(options[index])
+        print("\033[92m    " + options[index] + "\033[0m")  # Green color
 
     return index
 
