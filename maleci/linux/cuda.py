@@ -28,10 +28,10 @@ EXPECTED_ARGS = {
 
 DEFAULT_VALUES = {
     "linux install cuda": {
-        "versions": ["12.5", "12.1", "11.8"],
+        "versions": ["13.1"],
         "architecture": "x86_64",
         "distribution": "Ubuntu",
-        "distribution_version": "20.04",
+        "distribution_version": "24.04",
         "installer_type": "runfile",
         "temp": "~/install/maleci-cuda",
         "toolkit_only": True,
