@@ -54,6 +54,18 @@ INSTALL_PARAMS = {
             }
         }
     },
+    "13.0": {
+        "x86_64": {
+            "Ubuntu": {
+                "24.04": {
+                    "runfile": {
+                        "script_url": "https://developer.download.nvidia.com/compute/cuda/13.0.0/local_installers/cuda_13.0.0_580.65.06_linux.run",
+                        "commands": lambda toolkit_only: [f"sh cuda_13.0.0_580.65.06_linux.run --silent {'--toolkit' if toolkit_only else ''}"],
+                    }
+                }
+            }
+        }
+    },
     "12.5": {
         "x86_64": {
             "Ubuntu": {
