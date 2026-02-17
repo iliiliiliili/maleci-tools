@@ -42,6 +42,18 @@ DEFAULT_VALUES = {
 }
 
 INSTALL_PARAMS = {
+    "13.1": {
+        "x86_64": {
+            "Ubuntu": {
+                "24.04": {
+                    "runfile": {
+                        "script_url": "https://developer.download.nvidia.com/compute/cuda/13.1.1/local_installers/cuda_13.1.1_590.48.01_linux.run",
+                        "commands": lambda toolkit_only: [f"sh cuda_13.1.1_590.48.01_linux.run --silent {'--toolkit' if toolkit_only else ''}"],
+                    }
+                }
+            }
+        }
+    },
     "12.5": {
         "x86_64": {
             "Ubuntu": {
